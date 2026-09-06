@@ -35,6 +35,7 @@ private const val TAB_FAVORITES = "favorites"
 @Composable
 fun SpaceflightApp() {
     var selectedTab by rememberSaveable { mutableStateOf(TAB_FEED) }
+    var isReadingArticle by remember { mutableStateOf(false) }
 
     val destinations = remember {
         listOf(
@@ -58,7 +59,7 @@ fun SpaceflightApp() {
         // applying it here too would double the gap above the title.
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            if (!useRail) {
+            if (!useRail && !isReadingArticle) {
                 OrganicBottomNav(
                     items = destinations,
                     selectedKey = selectedTab,
@@ -101,7 +102,9 @@ fun SpaceflightApp() {
 
             Box(Modifier.fillMaxSize()) {
                 when (selectedTab) {
-                    TAB_FAVORITES -> ArticleListDetail { selectedId, isTwoPane, onArticleClick ->
+                    TAB_FAVORITES -> ArticleListDetail(
+                        onFullScreenDetailChange = { isReadingArticle = it },
+                    ) { selectedId, isTwoPane, onArticleClick ->
                         FavoritesScreen(
                             selectedId = selectedId,
                             isTwoPane = isTwoPane,
@@ -110,7 +113,9 @@ fun SpaceflightApp() {
                         )
                     }
 
-                    else -> ArticleListDetail { selectedId, isTwoPane, onArticleClick ->
+                    else -> ArticleListDetail(
+                        onFullScreenDetailChange = { isReadingArticle = it },
+                    ) { selectedId, isTwoPane, onArticleClick ->
                         FeedScreen(
                             selectedId = selectedId,
                             isTwoPane = isTwoPane,

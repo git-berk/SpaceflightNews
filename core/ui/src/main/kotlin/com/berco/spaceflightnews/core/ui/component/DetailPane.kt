@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -163,39 +165,41 @@ fun DetailPane(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MetaRow(article: Article, dateLabel: String?) {
-    val parts = buildList {
-        add(article.newsSite.uppercase() to true)
-        article.authors.firstOrNull()?.let { add(it to false) }
-        dateLabel?.let { add(it to false) }
-    }
+    // Several feeds set the author to the publication itself; showing both just
+    // repeats the name and crowds the row.
+    val author = article.authors.firstOrNull()
+        ?.takeIf { !it.equals(article.newsSite, ignoreCase = true) }
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        parts.forEachIndexed { index, (text, isSource) ->
-            if (index > 0) {
-                Spacer(Modifier.width(8.dp))
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = article.newsSite.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+        listOfNotNull(author, dateLabel).forEach { value ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 Box(
                     Modifier
                         .size(4.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.outline),
                 )
-                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
             }
-            Text(
-                text = text,
-                style = if (isSource) {
-                    MaterialTheme.typography.labelSmall
-                } else {
-                    MaterialTheme.typography.labelMedium
-                },
-                color = if (isSource) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-            )
         }
     }
 }

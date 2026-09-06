@@ -10,6 +10,8 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,6 +38,7 @@ import kotlinx.coroutines.launch
 fun ArticleListDetail(
     modifier: Modifier = Modifier,
     detailViewModel: ArticleDetailViewModel = hiltViewModel(),
+    onFullScreenDetailChange: (Boolean) -> Unit = {},
     listPane: @Composable (selectedId: Long?, isTwoPane: Boolean, onArticleClick: (Long) -> Unit) -> Unit,
 ) {
     val navigator = rememberListDetailPaneScaffoldNavigator<Long>()
@@ -44,6 +47,12 @@ fun ArticleListDetail(
     val context = LocalContext.current
     val toolbarColor = MaterialTheme.colorScheme.surface.toArgb()
     val dateFormatter = remember { DateFormatter() }
+
+    // Back is only possible when the detail pane has taken over the whole
+    // screen, which is exactly when the bottom bar should step aside.
+    val isDetailFullScreen = navigator.canNavigateBack()
+    LaunchedEffect(isDetailFullScreen) { onFullScreenDetailChange(isDetailFullScreen) }
+    DisposableEffect(Unit) { onDispose { onFullScreenDetailChange(false) } }
 
     NavigableListDetailPaneScaffold(
         navigator = navigator,
