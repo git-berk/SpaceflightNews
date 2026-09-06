@@ -4,9 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.berco.spaceflightnews.core.model.Article
@@ -54,6 +56,9 @@ fun DetailPane(
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
+        // Content runs edge to edge; the trailing spacer keeps the last line
+        // reachable above the gesture bar.
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = {},
@@ -114,7 +119,7 @@ fun DetailPane(
                 Text(article.title, style = MaterialTheme.typography.headlineLarge)
 
                 Spacer(Modifier.height(16.dp))
-                MetaRow(article, dateLabel)
+                MetaBlock(article, dateLabel)
 
                 if (article.summary.isNotBlank()) {
                     Spacer(Modifier.height(24.dp))
@@ -161,44 +166,59 @@ fun DetailPane(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun MetaRow(article: Article, dateLabel: String?) {
+private fun MetaBlock(article: Article, dateLabel: String?) {
     // Several feeds set the author to the publication itself; showing both just
-    // repeats the name and crowds the row.
+    // repeats the name.
     val author = article.authors.firstOrNull()
         ?.takeIf { !it.equals(article.newsSite, ignoreCase = true) }
 
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
+    Column {
         Text(
             text = article.newsSite.uppercase(),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
         )
-        listOfNotNull(author, dateLabel).forEach { value ->
+
+        if (author != null || dateLabel != null) {
+            Spacer(Modifier.height(6.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Box(
-                    Modifier
-                        .size(4.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.outline),
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                )
+                if (author != null) {
+                    Text(
+                        text = author,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        // Yields to the date so a long byline can never break it.
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    if (dateLabel != null) {
+                        Box(
+                            Modifier
+                                .size(4.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.outline),
+                        )
+                    }
+                }
+                if (dateLabel != null) {
+                    Text(
+                        text = dateLabel,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
             }
         }
     }
