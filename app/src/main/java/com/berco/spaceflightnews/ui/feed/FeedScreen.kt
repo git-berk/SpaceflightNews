@@ -52,9 +52,9 @@ fun FeedScreen(
         uiState = uiState,
         items = if (uiState.isSearchActive) searchItems else feedItems,
         onArticleClick = onArticleClick,
-        onQueryChange = remember(viewModel) { viewModel::onQueryChange },
-        onSearchActiveChange = remember(viewModel) { viewModel::onSearchActiveChange },
-        onToggleFavorite = remember(viewModel) { viewModel::onToggleFavorite },
+        onQueryChange = viewModel::onQueryChange,
+        onSearchActiveChange = viewModel::onSearchActiveChange,
+        onToggleFavorite = viewModel::onToggleFavorite,
         modifier = modifier,
     )
 }
