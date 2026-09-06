@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -72,10 +74,18 @@ private fun FeedContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    // For the feed the mediator drives refresh; search has no mediator, so its
-    // combined state is the source state.
-    val refreshState = items.loadState.mediator?.refresh ?: items.loadState.refresh
+    // Errors come from the mediator (search has none, so fall back to the
+    // combined state), but loading must also account for Room still querying:
+    // inside the cache TTL the mediator reports NotLoading immediately.
+    val mediatorRefresh = items.loadState.mediator?.refresh
+    val refreshError = (mediatorRefresh ?: items.loadState.refresh) as? LoadState.Error
+    val isRefreshing =
+        mediatorRefresh is LoadState.Loading || items.loadState.source.refresh is LoadState.Loading
     val isEmpty = items.itemCount == 0
+    val isSearchIdle = uiState.isSearchActive && uiState.query.trim().length < MIN_QUERY_LENGTH
+
+    val feedListState = rememberLazyListState()
+    val searchListState = rememberLazyListState()
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -90,16 +100,18 @@ private fun FeedContent(
         },
     ) { contentPadding ->
         PullToRefreshBox(
-            isRefreshing = refreshState is LoadState.Loading && !isEmpty,
+            isRefreshing = isRefreshing && !isEmpty,
             onRefresh = items::refresh,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding),
         ) {
             when {
-                refreshState is LoadState.Loading && isEmpty -> SkeletonList()
+                isSearchIdle -> SearchSuggestions(onSelect = onQueryChange)
 
-                refreshState is LoadState.Error && isEmpty -> StatusView(
+                isRefreshing && isEmpty -> SkeletonList()
+
+                refreshError != null && isEmpty -> StatusView(
                     icon = OrganicIcons.Alert,
                     title = "No connection",
                     message = "We couldn't reach the newsroom. Check your connection and try again.",
@@ -116,7 +128,8 @@ private fun FeedContent(
 
                 else -> ArticleList(
                     items = items,
-                    showOfflineBanner = refreshState is LoadState.Error,
+                    listState = if (uiState.isSearchActive) searchListState else feedListState,
+                    showOfflineBanner = refreshError != null,
                     onArticleClick = onArticleClick,
                     onToggleFavorite = onToggleFavorite,
                 )
@@ -128,6 +141,7 @@ private fun FeedContent(
 @Composable
 private fun ArticleList(
     items: LazyPagingItems<Article>,
+    listState: LazyListState,
     showOfflineBanner: Boolean,
     onArticleClick: (Long) -> Unit,
     onToggleFavorite: (Article) -> Unit,
@@ -135,6 +149,7 @@ private fun ArticleList(
     val dateFormatter = remember { DateFormatter() }
 
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),

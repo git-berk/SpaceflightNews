@@ -1,9 +1,9 @@
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
--keepclassmembers class com.berco.spaceflightnews.data.** {
+-keepclassmembers class com.berco.spaceflightnews.core.data.** {
     *** Companion;
 }
--keepclasseswithmembers class com.berco.spaceflightnews.data.** {
+-keepclasseswithmembers class com.berco.spaceflightnews.core.data.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 -keep,allowobfuscation,allowshrinking interface retrofit2.Call

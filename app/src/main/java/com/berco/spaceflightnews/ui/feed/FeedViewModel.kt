@@ -25,6 +25,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/** Shared with the screen, which must not show "no results" for a short query. */
+internal const val MIN_QUERY_LENGTH = 2
+
 data class FeedUiState(
     val query: String = "",
     val isSearchActive: Boolean = false,
@@ -90,7 +93,6 @@ class FeedViewModel @Inject constructor(
         const val KEY_QUERY = "feed.query"
         const val KEY_SEARCH_ACTIVE = "feed.searchActive"
         const val SEARCH_DEBOUNCE_MILLIS = 300L
-        const val MIN_QUERY_LENGTH = 2
         const val STOP_TIMEOUT = 5_000L
     }
 }

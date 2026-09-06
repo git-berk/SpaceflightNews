@@ -1,8 +1,11 @@
 package com.berco.spaceflightnews.core.data.paging
 
+import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import com.berco.spaceflightnews.core.data.fake.FakeArticleApi
 import com.berco.spaceflightnews.core.model.AppError
+import com.berco.spaceflightnews.core.model.Article
 import com.berco.spaceflightnews.core.model.AppException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -38,6 +41,31 @@ class SearchArticlePagingSourceTest {
         val result = source.load(refresh()) as PagingSource.LoadResult.Page
 
         assertEquals(10, result.data.size)
+        assertNull(result.nextKey)
+    }
+
+    @Test
+    fun `refreshing a search restarts at the first page`() = runTest {
+        val state = PagingState<Int, Article>(
+            pages = listOf(
+                PagingSource.LoadResult.Page(emptyList(), prevKey = null, nextKey = 40),
+            ),
+            anchorPosition = 25,
+            config = PagingConfig(pageSize = 20),
+            leadingPlaceholderCount = 0,
+        )
+
+        assertNull(source.getRefreshKey(state))
+    }
+
+    @Test
+    fun `an empty page ends pagination even if the API reports a next link`() = runTest {
+        api.totalAvailable = 0
+        api.alwaysReportNext = true
+
+        val result = source.load(refresh()) as PagingSource.LoadResult.Page
+
+        assertTrue(result.data.isEmpty())
         assertNull(result.nextKey)
     }
 

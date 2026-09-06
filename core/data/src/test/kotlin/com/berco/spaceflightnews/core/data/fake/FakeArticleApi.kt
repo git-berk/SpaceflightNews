@@ -14,6 +14,9 @@ class FakeArticleApi : ArticleApi {
     var totalAvailable = 100
     var failWith: Exception? = null
 
+    /** Reproduces an API that advertises another page while returning none. */
+    var alwaysReportNext = false
+
     override suspend fun getArticles(
         limit: Int,
         offset: Int,
@@ -46,7 +49,7 @@ class FakeArticleApi : ArticleApi {
         val consumed = offset + ids.size
         return PagedResponseDto(
             count = totalAvailable,
-            next = if (consumed >= totalAvailable) null else "next",
+            next = if (!alwaysReportNext && consumed >= totalAvailable) null else "next",
             previous = null,
             results = ids.map(::article),
         )

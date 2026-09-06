@@ -129,6 +129,17 @@ class ArticleRemoteMediatorTest {
     }
 
     @Test
+    fun `an empty page ends pagination even if the API reports a next link`() = runTest {
+        api.totalAvailable = 0
+        api.alwaysReportNext = true
+
+        val result = mediator().load(LoadType.REFRESH, emptyState())
+
+        assertTrue((result as RemoteMediator.MediatorResult.Success).endOfPaginationReached)
+        assertNull(db.remoteKeyDao().get()?.nextOffset)
+    }
+
+    @Test
     fun `prepend is a no-op on a newest-first feed`() = runTest {
         val result = mediator().load(LoadType.PREPEND, emptyState())
 
@@ -142,6 +153,40 @@ class ArticleRemoteMediatorTest {
 
         assertTrue((result as RemoteMediator.MediatorResult.Success).endOfPaginationReached)
         assertTrue(api.calls.isEmpty())
+    }
+
+    @Test
+    fun `appending does not extend the refresh TTL`() = runTest {
+        val started = now.minusMillis(ArticleRemoteMediator.CACHE_TTL_MILLIS - 1_000)
+        seedKey(refreshedAt = started)
+
+        mediator().load(LoadType.APPEND, emptyState())
+
+        assertEquals(started.toEpochMilli(), db.remoteKeyDao().get()!!.lastRefreshedAtMillis)
+    }
+
+    @Test
+    fun `a long scroll session still refreshes on the next cold start`() = runTest {
+        val started = now.minusMillis(ArticleRemoteMediator.CACHE_TTL_MILLIS - 1_000)
+        seedKey(refreshedAt = started)
+        mediator().load(LoadType.APPEND, emptyState())
+
+        val later = started.plusMillis(ArticleRemoteMediator.CACHE_TTL_MILLIS + 1)
+
+        assertEquals(
+            RemoteMediator.InitializeAction.LAUNCH_INITIAL_REFRESH,
+            mediator(at = later).initialize(),
+        )
+    }
+
+    @Test
+    fun `appending carries the original snapshot forward`() = runTest {
+        val started = now.minusMillis(1_000)
+        seedKey(refreshedAt = started)
+
+        mediator().load(LoadType.APPEND, emptyState())
+
+        assertEquals(started.toString(), api.calls.single().publishedAtLte)
     }
 
     @Test

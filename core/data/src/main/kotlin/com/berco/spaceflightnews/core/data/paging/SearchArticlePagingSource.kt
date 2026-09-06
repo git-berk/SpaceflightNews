@@ -27,16 +27,17 @@ class SearchArticlePagingSource(
             LoadResult.Page(
                 data = response.results.map { it.toDomain() },
                 prevKey = null,
-                nextKey = if (response.next == null) null else offset + response.results.size,
+                nextKey = if (response.next == null || response.results.isEmpty()) {
+                    null
+                } else {
+                    offset + response.results.size
+                },
             )
         } catch (e: Exception) {
             LoadResult.Error(e.asAppException())
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, Article>): Int? =
-        state.anchorPosition?.let { anchor ->
-            state.closestPageToPosition(anchor)?.prevKey?.plus(state.config.pageSize)
-                ?: state.closestPageToPosition(anchor)?.nextKey?.minus(state.config.pageSize)
-        }
+    /** Null restarts at offset 0, which is what refreshing a search should do. */
+    override fun getRefreshKey(state: PagingState<Int, Article>): Int? = null
 }

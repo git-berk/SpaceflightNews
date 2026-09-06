@@ -47,8 +47,12 @@ class ArticleRemoteMediator(
         state: PagingState<Int, ArticleWithFavorite>,
     ): MediatorResult {
         return try {
-            val (offset, snapshot) = when (loadType) {
-                LoadType.REFRESH -> 0 to Instant.now(clock).toString()
+            val load = when (loadType) {
+                LoadType.REFRESH -> LoadKey(
+                    offset = 0,
+                    snapshotIso = Instant.now(clock).toString(),
+                    refreshedAtMillis = clock.millis(),
+                )
 
                 // Newest-first feed; there is never anything above the first page.
                 LoadType.PREPEND ->
@@ -59,15 +63,17 @@ class ArticleRemoteMediator(
                         ?: return MediatorResult.Success(endOfPaginationReached = true)
                     val next = key.nextOffset
                         ?: return MediatorResult.Success(endOfPaginationReached = true)
-                    next to key.snapshotIso
+                    // Carried forward, not restamped: the TTL measures time since
+                    // the last refresh, not since the last page.
+                    LoadKey(next, key.snapshotIso, key.lastRefreshedAtMillis)
                 }
             }
 
             // Runs before any delete: a failed refresh must leave the cache intact.
             val response = api.getArticles(
                 limit = PAGE_SIZE,
-                offset = offset,
-                publishedAtLte = snapshot,
+                offset = load.offset,
+                publishedAtLte = load.snapshotIso,
             )
 
             db.withTransaction {
@@ -78,22 +84,30 @@ class ArticleRemoteMediator(
                 articleDao.upsertAll(response.results.map { it.toEntity() })
                 keyDao.upsert(
                     RemoteKeyEntity(
-                        nextOffset = if (response.next == null) {
+                        nextOffset = if (response.next == null || response.results.isEmpty()) {
                             null
                         } else {
-                            offset + response.results.size
+                            load.offset + response.results.size
                         },
-                        snapshotIso = snapshot,
-                        lastRefreshedAtMillis = clock.millis(),
+                        snapshotIso = load.snapshotIso,
+                        lastRefreshedAtMillis = load.refreshedAtMillis,
                     ),
                 )
             }
 
-            MediatorResult.Success(endOfPaginationReached = response.next == null)
+            MediatorResult.Success(
+                endOfPaginationReached = response.next == null || response.results.isEmpty(),
+            )
         } catch (e: Exception) {
             MediatorResult.Error(e.asAppException())
         }
     }
+
+    private data class LoadKey(
+        val offset: Int,
+        val snapshotIso: String,
+        val refreshedAtMillis: Long,
+    )
 
     companion object {
         const val PAGE_SIZE = 20

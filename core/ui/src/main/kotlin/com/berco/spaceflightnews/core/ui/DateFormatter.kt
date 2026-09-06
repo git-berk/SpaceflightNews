@@ -14,8 +14,8 @@ class DateFormatter(
     private val zoneId: ZoneId = ZoneId.systemDefault(),
     private val locale: Locale = Locale.getDefault(),
 ) {
-    private val absolute: DateTimeFormatter
-        get() = DateTimeFormatter.ofPattern("d MMM yyyy", locale)
+    private val absolute: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("d MMM yyyy", locale)
 
     fun format(instant: Instant?, now: Instant = Instant.now()): String? {
         if (instant == null) return null
