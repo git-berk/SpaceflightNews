@@ -30,6 +30,12 @@ kotlin {
     }
 }
 
+composeCompiler {
+    stabilityConfigurationFile =
+        rootProject.layout.projectDirectory.file("compose_stability.conf")
+    reportsDestination = layout.buildDirectory.dir("compose_reports")
+}
+
 dependencies {
     api(project(":core:model"))
 

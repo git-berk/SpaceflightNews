@@ -8,3 +8,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+compose_reports/
+compose_metrics/
