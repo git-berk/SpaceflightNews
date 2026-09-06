@@ -33,7 +33,6 @@ import com.berco.spaceflightnews.core.model.Article
 import com.berco.spaceflightnews.core.ui.DateFormatter
 import com.berco.spaceflightnews.core.ui.OrganicIcons
 import com.berco.spaceflightnews.core.ui.component.ArticleCard
-import com.berco.spaceflightnews.core.ui.component.ArticleRow
 import com.berco.spaceflightnews.core.ui.component.EndOfListFooter
 import com.berco.spaceflightnews.core.ui.component.InlineErrorRow
 import com.berco.spaceflightnews.core.ui.component.SkeletonCard
@@ -44,8 +43,6 @@ private const val SKELETON_COUNT = 4
 
 @Composable
 fun FeedScreen(
-    selectedId: Long?,
-    isTwoPane: Boolean,
     onArticleClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FeedViewModel = hiltViewModel(),
@@ -57,8 +54,6 @@ fun FeedScreen(
     FeedContent(
         uiState = uiState,
         items = if (uiState.isSearchActive) searchItems else feedItems,
-        selectedId = selectedId,
-        isTwoPane = isTwoPane,
         onArticleClick = onArticleClick,
         onQueryChange = viewModel::onQueryChange,
         onSearchActiveChange = viewModel::onSearchActiveChange,
@@ -72,8 +67,6 @@ fun FeedScreen(
 private fun FeedContent(
     uiState: FeedUiState,
     items: LazyPagingItems<Article>,
-    selectedId: Long?,
-    isTwoPane: Boolean,
     onArticleClick: (Long) -> Unit,
     onQueryChange: (String) -> Unit,
     onSearchActiveChange: (Boolean) -> Unit,
@@ -138,8 +131,6 @@ private fun FeedContent(
                 else -> ArticleList(
                     items = items,
                     listState = if (uiState.isSearchActive) searchListState else feedListState,
-                    selectedId = selectedId,
-                    isTwoPane = isTwoPane,
                     showOfflineBanner = refreshError != null,
                     onArticleClick = onArticleClick,
                     onToggleFavorite = onToggleFavorite,
@@ -153,8 +144,6 @@ private fun FeedContent(
 private fun ArticleList(
     items: LazyPagingItems<Article>,
     listState: LazyListState,
-    selectedId: Long?,
-    isTwoPane: Boolean,
     showOfflineBanner: Boolean,
     onArticleClick: (Long) -> Unit,
     onToggleFavorite: (Article) -> Unit,
@@ -165,7 +154,7 @@ private fun ArticleList(
         state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(if (isTwoPane) 4.dp else 20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         if (showOfflineBanner) {
             item(key = "offline-banner", contentType = "banner") {
@@ -183,22 +172,12 @@ private fun ArticleList(
         ) { index ->
             val article = items[index]
             if (article != null) {
-                val dateLabel = dateFormatter.format(article.publishedAt)
-                if (isTwoPane) {
-                    ArticleRow(
-                        article = article,
-                        dateLabel = dateLabel,
-                        selected = article.id == selectedId,
-                        onClick = { onArticleClick(article.id) },
-                    )
-                } else {
-                    ArticleCard(
-                        article = article,
-                        dateLabel = dateLabel,
-                        onClick = { onArticleClick(article.id) },
-                        onToggleFavorite = { onToggleFavorite(article) },
-                    )
-                }
+                ArticleCard(
+                    article = article,
+                    dateLabel = dateFormatter.format(article.publishedAt),
+                    onClick = { onArticleClick(article.id) },
+                    onToggleFavorite = { onToggleFavorite(article) },
+                )
             }
         }
 

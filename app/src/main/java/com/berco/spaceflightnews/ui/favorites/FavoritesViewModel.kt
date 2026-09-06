@@ -29,9 +29,7 @@ class FavoritesViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), FavoritesUiState.Loading)
 
-    fun onToggleFavorite(article: Article) {
-        viewModelScope.launch { favoriteRepository.toggle(article) }
-    }
+    fun onToggleFavorite(article: Article) = viewModelScope.launch { favoriteRepository.toggle(article) }
 
     private companion object {
         const val STOP_TIMEOUT = 5_000L

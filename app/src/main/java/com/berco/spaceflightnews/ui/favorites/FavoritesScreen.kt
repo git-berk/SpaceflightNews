@@ -25,13 +25,10 @@ import com.berco.spaceflightnews.core.model.Article
 import com.berco.spaceflightnews.core.ui.DateFormatter
 import com.berco.spaceflightnews.core.ui.OrganicIcons
 import com.berco.spaceflightnews.core.ui.component.ArticleCard
-import com.berco.spaceflightnews.core.ui.component.ArticleRow
 import com.berco.spaceflightnews.core.ui.component.StatusView
 
 @Composable
 fun FavoritesScreen(
-    selectedId: Long?,
-    isTwoPane: Boolean,
     onArticleClick: (Long) -> Unit,
     onBrowseFeed: () -> Unit,
     modifier: Modifier = Modifier,
@@ -66,8 +63,6 @@ fun FavoritesScreen(
 
             is FavoritesUiState.Saved -> SavedList(
                 articles = state.articles,
-                selectedId = selectedId,
-                isTwoPane = isTwoPane,
                 dateFormatter = dateFormatter,
                 onArticleClick = onArticleClick,
                 onToggleFavorite = viewModel::onToggleFavorite,
@@ -94,8 +89,6 @@ private fun FavoritesHeader(savedCount: Int) {
 @Composable
 private fun SavedList(
     articles: List<Article>,
-    selectedId: Long?,
-    isTwoPane: Boolean,
     dateFormatter: DateFormatter,
     onArticleClick: (Long) -> Unit,
     onToggleFavorite: (Article) -> Unit,
@@ -103,25 +96,15 @@ private fun SavedList(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(if (isTwoPane) 4.dp else 20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         items(items = articles, key = { it.id }, contentType = { "article" }) { article ->
-            val dateLabel = dateFormatter.format(article.publishedAt)
-            if (isTwoPane) {
-                ArticleRow(
-                    article = article,
-                    dateLabel = dateLabel,
-                    selected = article.id == selectedId,
-                    onClick = { onArticleClick(article.id) },
-                )
-            } else {
-                ArticleCard(
-                    article = article,
-                    dateLabel = dateLabel,
-                    onClick = { onArticleClick(article.id) },
-                    onToggleFavorite = { onToggleFavorite(article) },
-                )
-            }
+            ArticleCard(
+                article = article,
+                dateLabel = dateFormatter.format(article.publishedAt),
+                onClick = { onArticleClick(article.id) },
+                onToggleFavorite = { onToggleFavorite(article) },
+            )
         }
     }
 }

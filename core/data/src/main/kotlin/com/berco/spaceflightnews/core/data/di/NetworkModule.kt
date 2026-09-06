@@ -27,9 +27,6 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
-        // No OkHttp Cache on purpose. The API returns `cache-control: max-age=600`,
-        // so an HTTP cache would serve a stale body for ten minutes and make
-        // pull-to-refresh appear broken. Room is the single source of truth.
         .addInterceptor(
             HttpLoggingInterceptor().apply {
                 level = if (BuildConfig.DEBUG) {

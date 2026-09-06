@@ -1,129 +1,47 @@
 package com.berco.spaceflightnews.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.window.core.layout.WindowWidthSizeClass
-import com.berco.spaceflightnews.core.ui.OrganicIcons
-import com.berco.spaceflightnews.core.ui.component.BottomNavItem
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.berco.spaceflightnews.core.ui.component.OrganicBottomNav
-import com.berco.spaceflightnews.core.ui.theme.OrganicColors
-import com.berco.spaceflightnews.ui.favorites.FavoritesScreen
-import com.berco.spaceflightnews.ui.feed.FeedScreen
-
-private const val TAB_FEED = "feed"
-private const val TAB_FAVORITES = "favorites"
 
 @Composable
 fun SpaceflightApp() {
-    var selectedTab by rememberSaveable { mutableStateOf(TAB_FEED) }
-    var isReadingArticle by remember { mutableStateOf(false) }
+    val navController = rememberNavController()
+    val currentRoute by navController.currentBackStackEntryAsState()
 
-    val destinations = remember {
-        listOf(
-            BottomNavItem(TAB_FEED, "Feed", OrganicIcons.Newspaper),
-            BottomNavItem(
-                key = TAB_FAVORITES,
-                label = "Favorites",
-                icon = OrganicIcons.HeartOutline,
-                selectedIcon = OrganicIcons.HeartFilled,
-            ),
-        )
-    }
-
-    // The design swaps the bottom bar for a rail once both panes are visible.
-    val useRail = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass ==
-        WindowWidthSizeClass.EXPANDED
+    // The bar belongs to the top-level destinations only, so pushing the detail
+    // screen hides it without anything having to coordinate.
+    val showBottomBar = currentRoute?.destination?.route.isTopLevelRoute()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
-        // The screens inside own their status-bar inset through their top bars;
-        // applying it here too would double the gap above the title.
+        // Each destination owns its status-bar inset through its own top bar.
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            if (!useRail && !isReadingArticle) {
+            if (showBottomBar) {
                 OrganicBottomNav(
-                    items = destinations,
-                    selectedKey = selectedTab,
-                    onSelect = { selectedTab = it },
+                    items = topLevelDestinations,
+                    selectedKey = currentRoute?.destination?.route ?: topLevelDestinations.first().key,
+                    onSelect = navController::navigateToTopLevel,
                 )
             }
         },
     ) { contentPadding ->
-        Row(
-            Modifier
+        SpaceflightNavHost(
+            navController = navController,
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = contentPadding.calculateBottomPadding())
                 .consumeWindowInsets(contentPadding),
-        ) {
-            if (useRail) {
-                NavigationRail(containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
-                    destinations.forEach { item ->
-                        val selected = item.key == selectedTab
-                        NavigationRailItem(
-                            selected = selected,
-                            onClick = { selectedTab = item.key },
-                            icon = {
-                                Icon(
-                                    if (selected) item.selectedIcon else item.icon,
-                                    contentDescription = null,
-                                )
-                            },
-                            label = { Text(item.label, style = MaterialTheme.typography.labelMedium) },
-                            colors = NavigationRailItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                indicatorColor = OrganicColors.Accent200,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            ),
-                        )
-                    }
-                }
-            }
-
-            Box(Modifier.fillMaxSize()) {
-                when (selectedTab) {
-                    TAB_FAVORITES -> ArticleListDetail(
-                        onFullScreenDetailChange = { isReadingArticle = it },
-                    ) { selectedId, isTwoPane, onArticleClick ->
-                        FavoritesScreen(
-                            selectedId = selectedId,
-                            isTwoPane = isTwoPane,
-                            onArticleClick = onArticleClick,
-                            onBrowseFeed = { selectedTab = TAB_FEED },
-                        )
-                    }
-
-                    else -> ArticleListDetail(
-                        onFullScreenDetailChange = { isReadingArticle = it },
-                    ) { selectedId, isTwoPane, onArticleClick ->
-                        FeedScreen(
-                            selectedId = selectedId,
-                            isTwoPane = isTwoPane,
-                            onArticleClick = onArticleClick,
-                        )
-                    }
-                }
-            }
-        }
+        )
     }
 }
