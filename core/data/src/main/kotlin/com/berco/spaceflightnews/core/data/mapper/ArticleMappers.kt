@@ -13,6 +13,18 @@ import java.time.Instant
  */
 private val MIN_PLAUSIBLE_DATE: Instant = Instant.parse("2000-01-01T00:00:00Z")
 
+/**
+ * WordPress-sourced feeds append "The post <title> appeared first on <site>."
+ * after the real summary. Dropping it keeps the truncating ellipsis meaningful
+ * instead of stranding it mid-card next to boilerplate.
+ */
+private val RSS_TRAILER = Regex(
+    """\s*The post\b.*?\bappeared first on\b.*""",
+    RegexOption.DOT_MATCHES_ALL,
+)
+
+internal fun String.cleanSummary(): String = replace(RSS_TRAILER, "").trim()
+
 internal fun String?.toPublishedAtMillis(): Long? = this
     ?.let { runCatching { Instant.parse(it) }.getOrNull() }
     ?.takeIf { it.isAfter(MIN_PLAUSIBLE_DATE) }
@@ -21,7 +33,7 @@ internal fun String?.toPublishedAtMillis(): Long? = this
 fun ArticleDto.toEntity(): ArticleEntity = ArticleEntity(
     id = id,
     title = title,
-    summary = summary,
+    summary = summary.cleanSummary(),
     imageUrl = imageUrl?.takeIf { it.isNotBlank() },
     newsSite = newsSite,
     authors = authors.map { it.name },
@@ -32,7 +44,7 @@ fun ArticleDto.toEntity(): ArticleEntity = ArticleEntity(
 fun ArticleDto.toDomain(isFavorite: Boolean = false): Article = Article(
     id = id,
     title = title,
-    summary = summary,
+    summary = summary.cleanSummary(),
     imageUrl = imageUrl?.takeIf { it.isNotBlank() },
     newsSite = newsSite,
     authors = authors.map { it.name },

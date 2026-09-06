@@ -1,5 +1,9 @@
 package com.berco.spaceflightnews.core.ui.component
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -15,6 +19,8 @@ import com.berco.spaceflightnews.core.ui.OrganicIcons
 import com.berco.spaceflightnews.core.ui.preview.PreviewSurface
 import com.berco.spaceflightnews.core.ui.theme.OrganicColors
 
+private val NAV_BAR_CONTENT_HEIGHT = 72.dp
+
 data class BottomNavItem(
     val key: String,
     val label: String,
@@ -29,8 +35,10 @@ fun OrganicBottomNav(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val navigationInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     NavigationBar(
-        modifier = modifier,
+        modifier = modifier.height(NAV_BAR_CONTENT_HEIGHT + navigationInset),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         tonalElevation = 0.dp,
     ) {

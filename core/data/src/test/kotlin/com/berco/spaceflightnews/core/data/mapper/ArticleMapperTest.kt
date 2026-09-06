@@ -60,6 +60,24 @@ class ArticleMapperTest {
     }
 
     @Test
+    fun `strips the WordPress trailer but keeps the truncating ellipsis`() {
+        val raw = "Stoke Space and Relativity Space are\u2026\n" +
+            "The post Cape neighbors advance LC-14 appeared first on NASASpaceFlight.com."
+
+        assertEquals(
+            "Stoke Space and Relativity Space are\u2026",
+            dto(summary = raw).toDomain().summary,
+        )
+    }
+
+    @Test
+    fun `summaries without the trailer are untouched`() {
+        val raw = "Blue Origin will design and launch the Mars Telecommunications Orbiter."
+
+        assertEquals(raw, dto(summary = raw).toDomain().summary)
+    }
+
+    @Test
     fun `blank image url becomes null`() {
         assertNull(dto(imageUrl = "   ").toDomain().imageUrl)
         assertNull(dto(imageUrl = null).toDomain().imageUrl)

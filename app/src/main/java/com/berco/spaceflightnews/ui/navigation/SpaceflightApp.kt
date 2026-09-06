@@ -2,6 +2,8 @@ package com.berco.spaceflightnews.ui.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -52,6 +54,9 @@ fun SpaceflightApp() {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
+        // The screens inside own their status-bar inset through their top bars;
+        // applying it here too would double the gap above the title.
+        contentWindowInsets = WindowInsets(0),
         bottomBar = {
             if (!useRail) {
                 OrganicBottomNav(
@@ -62,7 +67,12 @@ fun SpaceflightApp() {
             }
         },
     ) { contentPadding ->
-        Row(Modifier.fillMaxSize().padding(contentPadding)) {
+        Row(
+            Modifier
+                .fillMaxSize()
+                .padding(bottom = contentPadding.calculateBottomPadding())
+                .consumeWindowInsets(contentPadding),
+        ) {
             if (useRail) {
                 NavigationRail(containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
                     destinations.forEach { item ->

@@ -26,6 +26,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.berco.spaceflightnews.core.ui.OrganicIcons
 
+private val FEED_HEADER_HEIGHT = 92.dp
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedTopBar(
@@ -44,6 +46,7 @@ fun FeedTopBar(
         )
     } else {
         LargeTopAppBar(
+            expandedHeight = FEED_HEADER_HEIGHT,
             title = { Text("Spaceflight News", style = MaterialTheme.typography.displaySmall) },
             actions = {
                 IconButton(onClick = { onSearchActiveChange(true) }) {
