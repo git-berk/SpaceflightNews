@@ -6,9 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.ui.Modifier
 import com.berco.spaceflightnews.core.ui.theme.SpaceflightTheme
-import com.berco.spaceflightnews.ui.feed.FeedScreen
+import com.berco.spaceflightnews.ui.navigation.SpaceflightApp
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -23,10 +22,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             SpaceflightTheme {
-                FeedScreen(
-                    onArticleClick = {},
-                    modifier = Modifier,
-                )
+                SpaceflightApp()
             }
         }
     }
