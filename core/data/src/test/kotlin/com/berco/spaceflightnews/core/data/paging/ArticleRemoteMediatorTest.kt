@@ -9,7 +9,6 @@ import androidx.room.Room
 import com.berco.spaceflightnews.core.data.fake.FakeArticleApi
 import com.berco.spaceflightnews.core.data.local.SpaceflightDatabase
 import com.berco.spaceflightnews.core.data.local.entity.ArticleEntity
-import com.berco.spaceflightnews.core.data.local.entity.ArticleWithFavorite
 import com.berco.spaceflightnews.core.data.local.entity.RemoteKeyEntity
 import com.berco.spaceflightnews.core.model.AppError
 import com.berco.spaceflightnews.core.model.AppException
@@ -53,7 +52,7 @@ class ArticleRemoteMediatorTest {
     private fun mediator(at: Instant = now) =
         ArticleRemoteMediator(api, db, Clock.fixed(at, ZoneOffset.UTC))
 
-    private fun emptyState() = PagingState<Int, ArticleWithFavorite>(
+    private fun emptyState() = PagingState<Int, ArticleEntity>(
         pages = emptyList(),
         anchorPosition = null,
         config = PagingConfig(pageSize = ArticleRemoteMediator.PAGE_SIZE),
@@ -104,7 +103,7 @@ class ArticleRemoteMediatorTest {
 
         assertTrue(result is RemoteMediator.MediatorResult.Error)
         assertEquals(1, db.articleDao().count())
-        assertEquals("Cached", db.articleDao().getById(999)?.article?.title)
+        assertEquals("Cached", db.articleDao().getById(999)?.title)
     }
 
     @Test

@@ -252,15 +252,3 @@ private fun ArticleCardPreview(
         )
     }
 }
-
-@ComponentPreviews
-@Composable
-private fun ArticleRowPreview() {
-    PreviewSurface {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            ArticleRow(PreviewSamples.article, "2h ago", selected = true, onClick = {})
-            ArticleRow(PreviewSamples.shortSummary, "Yesterday", selected = false, onClick = {})
-            ArticleRow(PreviewSamples.sparse, null, selected = false, onClick = {})
-        }
-    }
-}

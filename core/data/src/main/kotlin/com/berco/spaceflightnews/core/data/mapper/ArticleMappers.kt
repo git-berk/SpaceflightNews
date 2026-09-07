@@ -1,7 +1,6 @@
 package com.berco.spaceflightnews.core.data.mapper
 
 import com.berco.spaceflightnews.core.data.local.entity.ArticleEntity
-import com.berco.spaceflightnews.core.data.local.entity.ArticleWithFavorite
 import com.berco.spaceflightnews.core.data.local.entity.FavoriteArticleEntity
 import com.berco.spaceflightnews.core.data.remote.dto.ArticleDto
 import com.berco.spaceflightnews.core.model.Article
@@ -52,8 +51,6 @@ fun ArticleDto.toDomain(isFavorite: Boolean = false): Article = Article(
     publishedAt = publishedAt.toPublishedAtMillis()?.let(Instant::ofEpochMilli),
     isFavorite = isFavorite,
 )
-
-fun ArticleWithFavorite.toDomain(): Article = article.toDomain(isFavorite)
 
 fun ArticleEntity.toDomain(isFavorite: Boolean = false): Article = Article(
     id = id,

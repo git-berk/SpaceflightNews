@@ -6,7 +6,7 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.berco.spaceflightnews.core.data.local.SpaceflightDatabase
-import com.berco.spaceflightnews.core.data.local.entity.ArticleWithFavorite
+import com.berco.spaceflightnews.core.data.local.entity.ArticleEntity
 import com.berco.spaceflightnews.core.data.local.entity.RemoteKeyEntity
 import com.berco.spaceflightnews.core.data.mapper.asAppException
 import com.berco.spaceflightnews.core.data.mapper.toEntity
@@ -20,7 +20,7 @@ class ArticleRemoteMediator(
     private val api: ArticleApi,
     private val db: SpaceflightDatabase,
     private val clock: Clock = Clock.systemUTC(),
-) : RemoteMediator<Int, ArticleWithFavorite>() {
+) : RemoteMediator<Int, ArticleEntity>() {
 
     private val articleDao = db.articleDao()
     private val keyDao = db.remoteKeyDao()
@@ -44,7 +44,7 @@ class ArticleRemoteMediator(
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, ArticleWithFavorite>,
+        state: PagingState<Int, ArticleEntity>,
     ): MediatorResult {
         return try {
             val load = when (loadType) {

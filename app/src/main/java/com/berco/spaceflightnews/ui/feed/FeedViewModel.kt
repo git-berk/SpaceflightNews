@@ -50,16 +50,17 @@ class FeedViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), FeedUiState())
 
     /**
-     * Favourite state is joined in SQL, and Room invalidates the PagingSource
-     * when either table changes, so this stream needs no further combining.
-     */
-    val feed: Flow<PagingData<Article>> = articleRepository.feed().cachedIn(viewModelScope)
-
-    /**
-     * Search is network-only, so favourite state has to be merged in here.
      * `cachedIn` runs before `combine` so toggling a favourite re-maps the
-     * cached pages instead of re-issuing the request.
+     * cached pages instead of invalidating the pager and refreshing it, which
+     * would collapse the loaded window and shift the list.
      */
+    val feed: Flow<PagingData<Article>> = articleRepository.feed()
+        .cachedIn(viewModelScope)
+        .combine(favoriteRepository.observeFavoriteIds()) { paging, ids ->
+            paging.map { it.copy(isFavorite = it.id in ids) }
+        }
+
+    /** Network-only, so favourite state is layered on the same way. */
     val searchResults: Flow<PagingData<Article>> = query
         .debounce(SEARCH_DEBOUNCE_MILLIS)
         .map { it.trim() }

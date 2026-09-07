@@ -1,6 +1,5 @@
 package com.berco.spaceflightnews.core.data.local.entity
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -16,9 +15,4 @@ data class ArticleEntity(
     val url: String,
     /** Null when the API sends an implausible date (the 1970 epoch stubs). */
     val publishedAtMillis: Long?,
-)
-
-data class ArticleWithFavorite(
-    @Embedded val article: ArticleEntity,
-    val isFavorite: Boolean,
 )
