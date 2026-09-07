@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 /** Shared with the screen, which must not show "no results" for a short query. */
 internal const val MIN_QUERY_LENGTH = 2
@@ -62,7 +63,7 @@ class FeedViewModel @Inject constructor(
 
     /** Network-only, so favourite state is layered on the same way. */
     val searchResults: Flow<PagingData<Article>> = query
-        .debounce(SEARCH_DEBOUNCE_MILLIS)
+        .debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds)
         .map { it.trim() }
         .distinctUntilChanged()
         .flatMapLatest { text ->
