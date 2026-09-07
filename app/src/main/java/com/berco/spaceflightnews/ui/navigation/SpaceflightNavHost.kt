@@ -8,7 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.berco.spaceflightnews.ui.detail.navigation.articleDetailScreen
 import com.berco.spaceflightnews.ui.detail.navigation.navigateToArticleDetail
-import com.berco.spaceflightnews.ui.home.navigation.HOME_ROUTE
+import com.berco.spaceflightnews.ui.home.navigation.HomeRoute
 import com.berco.spaceflightnews.ui.home.navigation.homeScreen
 
 @Composable
@@ -18,7 +18,7 @@ fun SpaceflightNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = HOME_ROUTE,
+        startDestination = HomeRoute,
         modifier = modifier,
         // Home holds still while detail slides over it, so the bottom bar stays
         // put under the incoming screen rather than blinking out first.

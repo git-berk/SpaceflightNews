@@ -20,7 +20,7 @@ import com.berco.spaceflightnews.ui.util.openArticle
 import com.berco.spaceflightnews.ui.util.shareArticle
 
 @Composable
-fun ArticleDetailRoute(
+fun ArticleDetailScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ArticleDetailViewModel = hiltViewModel(),

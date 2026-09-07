@@ -3,13 +3,15 @@ package com.berco.spaceflightnews.ui.home.navigation
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.berco.spaceflightnews.ui.home.HomeScreen
+import kotlinx.serialization.Serializable
 
-const val HOME_ROUTE = "home_route"
+@Serializable
+data object HomeRoute
 
 fun NavGraphBuilder.homeScreen(
     onArticleClick: (Long) -> Unit,
 ) {
-    composable(route = HOME_ROUTE) {
+    composable<HomeRoute> {
         HomeScreen(onArticleClick = onArticleClick)
     }
 }

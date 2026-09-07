@@ -1,28 +1,36 @@
 package com.berco.spaceflightnews.ui.navigation
 
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.berco.spaceflightnews.core.ui.OrganicIcons
-import com.berco.spaceflightnews.core.ui.component.BottomNavItem
-import com.berco.spaceflightnews.ui.favorites.navigation.FAVORITES_ROUTE
-import com.berco.spaceflightnews.ui.feed.navigation.FEED_ROUTE
+import com.berco.spaceflightnews.ui.favorites.navigation.FavoritesRoute
+import com.berco.spaceflightnews.ui.feed.navigation.FeedRoute
 
-val topLevelDestinations = listOf(
-    BottomNavItem(FEED_ROUTE, "Feed", OrganicIcons.Newspaper),
-    BottomNavItem(
-        key = FAVORITES_ROUTE,
-        label = "Favorites",
-        icon = OrganicIcons.HeartOutline,
-        selectedIcon = OrganicIcons.HeartFilled,
-    ),
-)
+enum class TopLevelDestination(
+    val route: Any,
+    val label: String,
+    val icon: ImageVector,
+    val selectedIcon: ImageVector,
+) {
+    FEED(FeedRoute, "Feed", OrganicIcons.Newspaper, OrganicIcons.Newspaper),
+    FAVORITES(FavoritesRoute, "Favorites", OrganicIcons.HeartOutline, OrganicIcons.HeartFilled),
+}
+
+fun NavDestination?.toTopLevelDestination(): TopLevelDestination? =
+    TopLevelDestination.entries.firstOrNull { destination ->
+        this?.hierarchy?.any { it.hasRoute(destination.route::class) } == true
+    }
 
 /**
  * Tabs swap rather than stack: each keeps its own back stack and saved state,
  * and re-selecting one returns to its root instead of pushing a duplicate.
  */
-fun NavController.navigateToTopLevel(route: String) {
-    navigate(route) {
+fun NavController.navigateToTopLevel(destination: TopLevelDestination) {
+    navigate(destination.route) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
         restoreState = true

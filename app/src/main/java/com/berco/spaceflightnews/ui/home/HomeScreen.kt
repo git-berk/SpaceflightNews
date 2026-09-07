@@ -11,16 +11,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.berco.spaceflightnews.core.ui.component.BottomNavItem
 import com.berco.spaceflightnews.core.ui.component.OrganicBottomNav
 import com.berco.spaceflightnews.ui.favorites.navigation.favoritesScreen
-import com.berco.spaceflightnews.ui.feed.navigation.FEED_ROUTE
+import com.berco.spaceflightnews.ui.feed.navigation.FeedRoute
 import com.berco.spaceflightnews.ui.feed.navigation.feedScreen
+import com.berco.spaceflightnews.ui.navigation.TopLevelDestination
 import com.berco.spaceflightnews.ui.navigation.navigateToTopLevel
-import com.berco.spaceflightnews.ui.navigation.topLevelDestinations
+import com.berco.spaceflightnews.ui.navigation.toTopLevelDestination
 
 private const val TAB_FADE_MILLIS = 200
 
@@ -36,7 +39,13 @@ fun HomeScreen(
 ) {
     val tabController = rememberNavController()
     val currentEntry by tabController.currentBackStackEntryAsState()
-    val selectedTab = currentEntry?.destination?.route ?: FEED_ROUTE
+    val selected = currentEntry?.destination.toTopLevelDestination() ?: TopLevelDestination.FEED
+
+    val items = remember {
+        TopLevelDestination.entries.map {
+            BottomNavItem(it.name, it.label, it.icon, it.selectedIcon)
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -45,15 +54,17 @@ fun HomeScreen(
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
             OrganicBottomNav(
-                items = topLevelDestinations,
-                selectedKey = selectedTab,
-                onSelect = tabController::navigateToTopLevel,
+                items = items,
+                selectedKey = selected.name,
+                onSelect = { key ->
+                    tabController.navigateToTopLevel(TopLevelDestination.valueOf(key))
+                },
             )
         },
     ) { contentPadding ->
         NavHost(
             navController = tabController,
-            startDestination = FEED_ROUTE,
+            startDestination = FeedRoute,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = contentPadding.calculateBottomPadding())
@@ -67,7 +78,7 @@ fun HomeScreen(
             feedScreen(onArticleClick = onArticleClick)
             favoritesScreen(
                 onArticleClick = onArticleClick,
-                onBrowseFeed = { tabController.navigateToTopLevel(FEED_ROUTE) },
+                onBrowseFeed = { tabController.navigateToTopLevel(TopLevelDestination.FEED) },
             )
         }
     }

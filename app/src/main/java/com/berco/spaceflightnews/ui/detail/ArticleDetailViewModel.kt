@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.berco.spaceflightnews.core.data.repository.ArticleRepository
 import com.berco.spaceflightnews.core.data.repository.FavoriteRepository
 import com.berco.spaceflightnews.core.model.Article
-import com.berco.spaceflightnews.ui.detail.navigation.ARTICLE_ID_ARG
+import androidx.navigation.toRoute
+import com.berco.spaceflightnews.ui.detail.navigation.ArticleDetailRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +24,7 @@ class ArticleDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val articleId: Long = checkNotNull(savedStateHandle[ARTICLE_ID_ARG])
+    private val articleId: Long = savedStateHandle.toRoute<ArticleDetailRoute>().articleId
 
     /**
      * The article is read once; favourite state is layered on separately so
