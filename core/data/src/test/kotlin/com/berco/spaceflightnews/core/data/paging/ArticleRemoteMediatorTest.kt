@@ -69,21 +69,23 @@ class ArticleRemoteMediatorTest {
         val result = mediator().load(LoadType.REFRESH, emptyState())
 
         assertTrue(result is RemoteMediator.MediatorResult.Success)
-        assertEquals(config.initialLoadSize, db.articleDao().count())
+        val expected = config.initialLoadSize + config.pageSize
+        assertEquals(expected, db.articleDao().count())
 
         val key = db.remoteKeyDao().get()!!
-        assertEquals(config.initialLoadSize, key.nextOffset)
+        assertEquals(expected, key.nextOffset)
         assertEquals(now.toString(), key.snapshotIso)
     }
 
     @Test
-    fun `refresh fills the first screen in one request`() = runTest {
+    fun `refresh fetches a page beyond the first window`() = runTest {
         mediator().load(LoadType.REFRESH, emptyState())
 
-        // A fixed pageSize here would leave the viewport short and let prefetch
-        // fire two more requests straight after a pull to refresh.
+        // Fetching exactly initialLoadSize would leave the cache empty once the
+        // window is served, which makes Paging immediately request another page.
         assertEquals(1, api.calls.size)
-        assertEquals(config.initialLoadSize, api.calls.single().limit)
+        assertEquals(config.initialLoadSize + config.pageSize, api.calls.single().limit)
+        assertEquals(config.initialLoadSize + config.pageSize, db.articleDao().count())
     }
 
     @Test
@@ -105,7 +107,7 @@ class ArticleRemoteMediatorTest {
         assertEquals(now.toString(), api.calls[0].publishedAtLte)
         assertEquals(now.toString(), api.calls[1].publishedAtLte)
         assertEquals(0, api.calls[0].offset)
-        assertEquals(config.initialLoadSize, api.calls[1].offset)
+        assertEquals(config.initialLoadSize + config.pageSize, api.calls[1].offset)
     }
 
     @Test
@@ -115,7 +117,7 @@ class ArticleRemoteMediatorTest {
         mediator().load(LoadType.REFRESH, emptyState())
 
         assertNull(db.articleDao().getById(999))
-        assertEquals(config.initialLoadSize, db.articleDao().count())
+        assertEquals(config.initialLoadSize + config.pageSize, db.articleDao().count())
     }
 
     @Test
@@ -143,7 +145,7 @@ class ArticleRemoteMediatorTest {
 
     @Test
     fun `pagination ends when the API reports no next page`() = runTest {
-        api.totalAvailable = config.initialLoadSize
+        api.totalAvailable = config.initialLoadSize + config.pageSize
 
         val result = mediator().load(LoadType.REFRESH, emptyState())
 
