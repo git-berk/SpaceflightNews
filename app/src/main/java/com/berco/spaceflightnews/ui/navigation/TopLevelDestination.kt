@@ -17,10 +17,6 @@ val topLevelDestinations = listOf(
     ),
 )
 
-private val topLevelRoutes = topLevelDestinations.map { it.key }.toSet()
-
-fun String?.isTopLevelRoute(): Boolean = this in topLevelRoutes
-
 /**
  * Tabs swap rather than stack: each keeps its own back stack and saved state,
  * and re-selecting one returns to its root instead of pushing a duplicate.
