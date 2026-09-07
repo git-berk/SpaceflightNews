@@ -93,7 +93,7 @@ class FeedViewModel @Inject constructor(
     private companion object {
         const val KEY_QUERY = "feed.query"
         const val KEY_SEARCH_ACTIVE = "feed.searchActive"
-        const val SEARCH_DEBOUNCE_MILLIS = 300L
+        const val SEARCH_DEBOUNCE_MILLIS = 500L
         const val STOP_TIMEOUT = 5_000L
     }
 }
