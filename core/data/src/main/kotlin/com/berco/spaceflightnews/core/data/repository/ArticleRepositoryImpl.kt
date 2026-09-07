@@ -40,12 +40,12 @@ class ArticleRepositoryImpl @Inject constructor(
     ).flow
 
     /**
-     * initialLoadSize defaults to three pages, which would cost three
-     * sequential requests before the first frame.
+     * The first load covers three pages in a single request, so the opening
+     * screen is filled without prefetch immediately asking for more.
      */
     private fun pagingConfig() = PagingConfig(
         pageSize = PAGE_SIZE,
-        initialLoadSize = PAGE_SIZE,
+        initialLoadSize = PAGE_SIZE * 3,
         enablePlaceholders = false,
     )
 

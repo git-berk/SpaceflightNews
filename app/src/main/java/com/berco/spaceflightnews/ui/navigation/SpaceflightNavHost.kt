@@ -20,8 +20,6 @@ fun SpaceflightNavHost(
         navController = navController,
         startDestination = HomeRoute,
         modifier = modifier,
-        // Home holds still while detail slides over it, so the bottom bar stays
-        // put under the incoming screen rather than blinking out first.
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },

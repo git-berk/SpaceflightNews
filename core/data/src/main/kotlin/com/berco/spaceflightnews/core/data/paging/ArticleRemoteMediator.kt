@@ -69,9 +69,17 @@ class ArticleRemoteMediator(
                 }
             }
 
+            // Paging asks for initialLoadSize up front and pageSize thereafter.
+            // Fetching a fixed pageSize on refresh leaves the first screen short,
+            // and prefetch immediately fires follow-up pages to make up the gap.
+            val limit = when (loadType) {
+                LoadType.REFRESH -> state.config.initialLoadSize
+                else -> state.config.pageSize
+            }
+
             // Runs before any delete: a failed refresh must leave the cache intact.
             val response = api.getArticles(
-                limit = PAGE_SIZE,
+                limit = limit,
                 offset = load.offset,
                 publishedAtLte = load.snapshotIso,
             )
