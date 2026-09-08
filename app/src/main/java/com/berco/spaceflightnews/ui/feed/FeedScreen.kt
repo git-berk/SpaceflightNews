@@ -170,9 +170,12 @@ private fun ArticleList(
             key = items.itemKey { it.id },
             contentType = items.itemContentType { ARTICLE_CONTENT_TYPE },
         ) { index ->
-            val article = items[index]
-            if (article != null) {
-                ArticleCard(
+            when (val article = items[index]) {
+                // A placeholder position: the row exists in the database but is
+                // not in the currently loaded window yet.
+                null -> SkeletonCard()
+
+                else -> ArticleCard(
                     article = article,
                     dateLabel = dateFormatter.format(article.publishedAt),
                     onClick = { onArticleClick(article.id) },

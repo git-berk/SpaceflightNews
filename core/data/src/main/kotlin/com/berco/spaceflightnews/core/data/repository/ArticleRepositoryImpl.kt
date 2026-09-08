@@ -42,11 +42,16 @@ class ArticleRepositoryImpl @Inject constructor(
     /**
      * The first load covers three pages in a single request, so the opening
      * screen is filled without prefetch immediately asking for more.
+     *
+     * Placeholders are on because every mediator write invalidates the Room
+     * PagingSource, and the reload that follows only covers initialLoadSize
+     * rows. Without placeholders the item count collapses to that window and
+     * every index shifts, moving the list under the reader.
      */
     private fun pagingConfig() = PagingConfig(
         pageSize = PAGE_SIZE,
         initialLoadSize = PAGE_SIZE * 3,
-        enablePlaceholders = false,
+        enablePlaceholders = true,
     )
 
     override suspend fun getArticle(id: Long): Article? =
