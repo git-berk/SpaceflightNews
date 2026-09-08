@@ -7,6 +7,7 @@ import androidx.annotation.ColorInt
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
+import com.berco.spaceflightnews.R
 import com.berco.spaceflightnews.core.model.Article
 
 /** Shares the publisher's own URL, which doubles as the required attribution. */
@@ -16,7 +17,7 @@ fun Context.shareArticle(article: Article) {
         putExtra(Intent.EXTRA_SUBJECT, article.title)
         putExtra(Intent.EXTRA_TEXT, "${article.title}\n\n${article.url}")
     }
-    startActivity(Intent.createChooser(intent, "Share article"))
+    startActivity(Intent.createChooser(intent, getString(R.string.share_chooser_title)))
 }
 
 fun Context.openArticle(article: Article, @ColorInt toolbarColor: Int) {

@@ -27,6 +27,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.berco.spaceflightnews.core.ui.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -207,6 +209,14 @@ private fun SourceAndDate(
 
 @Composable
 private fun FavoriteButton(isFavorite: Boolean, onToggle: () -> Unit) {
+    // Resolved here because `semantics` is not a composable scope.
+    val savedState = stringResource(
+        if (isFavorite) R.string.state_saved else R.string.state_not_saved,
+    )
+    val favoriteAction = stringResource(
+        if (isFavorite) R.string.cd_remove_from_favorites else R.string.cd_add_to_favorites,
+    )
+
     IconButton(onClick = onToggle, modifier = Modifier.size(44.dp)) {
         Box(
             contentAlignment = Alignment.Center,
@@ -221,12 +231,12 @@ private fun FavoriteButton(isFavorite: Boolean, onToggle: () -> Unit) {
                     },
                 )
                 .semantics {
-                    stateDescription = if (isFavorite) "Saved" else "Not saved"
+                    stateDescription = savedState
                 },
         ) {
             Icon(
                 imageVector = if (isFavorite) OrganicIcons.HeartFilled else OrganicIcons.HeartOutline,
-                contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                contentDescription = favoriteAction,
                 tint = if (isFavorite) {
                     MaterialTheme.colorScheme.primary
                 } else {

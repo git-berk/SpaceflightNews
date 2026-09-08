@@ -13,11 +13,10 @@ import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
+import com.berco.spaceflightnews.R
 import androidx.compose.ui.unit.dp
-
-private val SUGGESTED_TOPICS = listOf(
-    "Starship", "Artemis", "Mars", "Blue Origin", "ISS", "Europa", "Falcon Heavy",
-)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -31,16 +30,18 @@ fun SearchSuggestions(
             .padding(horizontal = 24.dp, vertical = 12.dp),
     ) {
         Text(
-            text = "Suggested topics",
+            text = stringResource(R.string.feed_suggestions_title),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 12.dp),
         )
+        val topics = stringArrayResource(R.array.feed_search_suggestions)
+
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SUGGESTED_TOPICS.forEach { topic ->
+            topics.forEach { topic ->
                 SuggestionChip(
                     onClick = { onSelect(topic) },
                     shape = CircleShape,

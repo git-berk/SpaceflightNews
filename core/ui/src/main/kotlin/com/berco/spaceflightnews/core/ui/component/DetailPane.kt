@@ -31,6 +31,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.berco.spaceflightnews.core.ui.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -65,7 +67,7 @@ fun DetailPane(
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(onClick = onBack) {
-                            Icon(OrganicIcons.ArrowLeft, contentDescription = "Back")
+                            Icon(OrganicIcons.ArrowLeft, contentDescription = stringResource(R.string.cd_back))
                         }
                     }
                 },
@@ -78,9 +80,9 @@ fun DetailPane(
                                 OrganicIcons.HeartOutline
                             },
                             contentDescription = if (article.isFavorite) {
-                                "Remove from favorites"
+                                stringResource(R.string.cd_remove_from_favorites)
                             } else {
-                                "Add to favorites"
+                                stringResource(R.string.cd_add_to_favorites)
                             },
                             tint = if (article.isFavorite) {
                                 MaterialTheme.colorScheme.primary
@@ -90,7 +92,7 @@ fun DetailPane(
                         )
                     }
                     IconButton(onClick = onShare) {
-                        Icon(OrganicIcons.Share, contentDescription = "Share article")
+                        Icon(OrganicIcons.Share, contentDescription = stringResource(R.string.cd_share_article))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -147,7 +149,10 @@ fun DetailPane(
                         vertical = 16.dp,
                     ),
                 ) {
-                    Text("Read full article", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.detail_read_full_article),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                     Spacer(Modifier.width(10.dp))
                     Icon(
                         OrganicIcons.ExternalLink,
@@ -158,8 +163,7 @@ fun DetailPane(
 
                 Spacer(Modifier.height(14.dp))
                 Text(
-                    text = "Summary and image courtesy of ${article.newsSite}. " +
-                        "Opens in your browser.",
+                    text = stringResource(R.string.detail_attribution, article.newsSite),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

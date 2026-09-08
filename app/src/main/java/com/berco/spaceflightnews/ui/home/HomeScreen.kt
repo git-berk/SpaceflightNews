@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.res.stringResource
 import com.berco.spaceflightnews.core.ui.component.BottomNavItem
 import com.berco.spaceflightnews.core.ui.component.OrganicBottomNav
 import com.berco.spaceflightnews.ui.favorites.navigation.favoritesScreen
@@ -41,9 +42,13 @@ fun HomeScreen(
     val currentEntry by tabController.currentBackStackEntryAsState()
     val selected = currentEntry?.destination.toTopLevelDestination() ?: TopLevelDestination.FEED
 
-    val items = remember {
-        TopLevelDestination.entries.map {
-            BottomNavItem(it.name, it.label, it.icon, it.selectedIcon)
+    // Resolved outside `remember`, which is not a composable scope. The list key
+    // compares structurally, so the items survive recomposition but follow a
+    // locale change.
+    val labels = TopLevelDestination.entries.map { stringResource(it.labelRes) }
+    val items = remember(labels) {
+        TopLevelDestination.entries.mapIndexed { index, destination ->
+            BottomNavItem(destination.name, labels[index], destination.icon, destination.selectedIcon)
         }
     }
 

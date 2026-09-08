@@ -18,6 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.berco.spaceflightnews.R
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,12 +54,11 @@ fun FavoritesScreen(
 
             FavoritesUiState.Empty -> StatusView(
                 icon = OrganicIcons.HeartOutline,
-                title = "Nothing saved yet",
-                message = "Tap the heart on any story and it will wait for you here — " +
-                    "no connection needed.",
+                title = stringResource(R.string.favorites_empty_title),
+                message = stringResource(R.string.favorites_empty_message),
                 discColor = MaterialTheme.colorScheme.secondaryContainer,
                 iconTint = MaterialTheme.colorScheme.onSecondaryContainer,
-                actionLabel = "Browse the feed",
+                actionLabel = stringResource(R.string.favorites_empty_action),
                 actionIcon = OrganicIcons.ChevronRight,
                 onAction = onBrowseFeed,
             )
@@ -74,11 +76,11 @@ fun FavoritesScreen(
 @Composable
 private fun FavoritesHeader(savedCount: Int) {
     Column(Modifier.padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 14.dp)) {
-        Text("Favorites", style = MaterialTheme.typography.displaySmall)
+        Text(stringResource(R.string.favorites_title), style = MaterialTheme.typography.displaySmall)
         if (savedCount > 0) {
             Spacer(Modifier.height(8.dp))
             Text(
-                text = if (savedCount == 1) "1 saved story" else "$savedCount saved stories",
+                text = pluralStringResource(R.plurals.favorites_saved_count, savedCount, savedCount),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

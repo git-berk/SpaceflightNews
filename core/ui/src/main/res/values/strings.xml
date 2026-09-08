@@ -1,0 +1,16 @@
+<resources>
+    <string name="cd_back">Back</string>
+    <string name="cd_share_article">Share article</string>
+    <string name="cd_add_to_favorites">Add to favorites</string>
+    <string name="cd_remove_from_favorites">Remove from favorites</string>
+    <string name="state_saved">Saved</string>
+    <string name="state_not_saved">Not saved</string>
+
+    <string name="action_retry">Retry</string>
+
+    <string name="end_of_list_title">You\'re all caught up</string>
+    <string name="end_of_list_message">That\'s every story we could reach. Pull down to refresh.</string>
+
+    <string name="detail_read_full_article">Read full article</string>
+    <string name="detail_attribution">Summary and image courtesy of %1$s. Opens in your browser.</string>
+</resources>

@@ -19,6 +19,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.berco.spaceflightnews.R
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -107,17 +109,17 @@ private fun FeedContent(
 
                 loadState.hasRefreshError && loadState.isEmpty -> StatusView(
                     icon = OrganicIcons.Alert,
-                    title = "No connection",
-                    message = "We couldn't reach the newsroom. Check your connection and try again.",
-                    actionLabel = "Try again",
+                    title = stringResource(R.string.feed_offline_title),
+                    message = stringResource(R.string.feed_offline_message),
+                    actionLabel = stringResource(R.string.feed_offline_action),
                     actionIcon = OrganicIcons.Refresh,
                     onAction = items::retry,
                 )
 
                 loadState.isEmpty && uiState.isSearchActive -> StatusView(
                     icon = OrganicIcons.Search,
-                    title = "No stories for “${uiState.query}”",
-                    message = "Try a different keyword, or check the spelling.",
+                    title = stringResource(R.string.feed_search_empty_title, uiState.query),
+                    message = stringResource(R.string.feed_search_empty_message),
                 )
 
                 else -> ArticleList(
@@ -153,7 +155,7 @@ private fun ArticleList(
         if (showOfflineBanner) {
             item(key = "offline-banner", contentType = "banner") {
                 InlineErrorRow(
-                    message = "Showing saved stories — couldn't reach the network.",
+                    message = stringResource(R.string.feed_offline_banner),
                     onRetry = items::retry,
                 )
             }
@@ -184,7 +186,7 @@ private fun ArticleList(
 
             FeedLoadState.AppendState.Error ->
                 item(key = "append-error", contentType = "banner") {
-                    InlineErrorRow("Couldn't load more stories.", onRetry = items::retry)
+                    InlineErrorRow(stringResource(R.string.feed_append_error), onRetry = items::retry)
                 }
 
             FeedLoadState.AppendState.EndReached ->

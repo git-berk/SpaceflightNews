@@ -25,6 +25,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.berco.spaceflightnews.core.ui.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -128,7 +130,7 @@ fun InlineErrorRow(
                     contentColor = MaterialTheme.colorScheme.primary,
                 ),
             ) {
-                Text("Retry", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.action_retry), style = MaterialTheme.typography.labelLarge)
             }
         }
     }
@@ -152,10 +154,13 @@ fun EndOfListFooter(modifier: Modifier = Modifier) {
             }
         }
         Spacer(Modifier.height(20.dp))
-        Text("You're all caught up", style = MaterialTheme.typography.titleLarge)
+        Text(
+            stringResource(R.string.end_of_list_title),
+            style = MaterialTheme.typography.titleLarge,
+        )
         Spacer(Modifier.height(8.dp))
         Text(
-            "That's every story we could reach. Pull down to refresh.",
+            stringResource(R.string.end_of_list_message),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

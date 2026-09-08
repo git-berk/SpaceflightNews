@@ -35,6 +35,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.berco.spaceflightnews.R
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -64,12 +66,12 @@ fun FeedTopBar(
     } else {
         LargeTopAppBar(
             expandedHeight = FEED_HEADER_HEIGHT,
-            title = { Text("Spaceflight News", style = MaterialTheme.typography.displaySmall) },
+            title = { Text(stringResource(R.string.feed_title), style = MaterialTheme.typography.displaySmall) },
             actions = {
                 IconButton(onClick = { onSearchActiveChange(true) }) {
                     Icon(
                         OrganicIcons.Search,
-                        contentDescription = "Search articles",
+                        contentDescription = stringResource(R.string.feed_search_open),
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -108,7 +110,7 @@ private fun SearchTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onDismiss, modifier = Modifier.size(44.dp)) {
-            Icon(OrganicIcons.ArrowLeft, contentDescription = "Close search")
+            Icon(OrganicIcons.ArrowLeft, contentDescription = stringResource(R.string.feed_search_close))
         }
 
         BasicTextField(
@@ -146,7 +148,7 @@ private fun SearchTopBar(
                     Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                         if (query.isEmpty()) {
                             Text(
-                                text = "Search spaceflight news",
+                                text = stringResource(R.string.feed_search_placeholder),
                                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -164,7 +166,7 @@ private fun SearchTopBar(
                         ) {
                             Icon(
                                 OrganicIcons.Close,
-                                contentDescription = "Clear search",
+                                contentDescription = stringResource(R.string.feed_search_clear),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(18.dp),
                             )

@@ -1,23 +1,25 @@
 package com.berco.spaceflightnews.ui.navigation
 
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.berco.spaceflightnews.R
 import com.berco.spaceflightnews.core.ui.OrganicIcons
 import com.berco.spaceflightnews.ui.favorites.navigation.FavoritesRoute
 import com.berco.spaceflightnews.ui.feed.navigation.FeedRoute
 
 enum class TopLevelDestination(
     val route: Any,
-    val label: String,
+    @param:StringRes val labelRes: Int,
     val icon: ImageVector,
     val selectedIcon: ImageVector,
 ) {
-    FEED(FeedRoute, "Feed", OrganicIcons.Newspaper, OrganicIcons.Newspaper),
-    FAVORITES(FavoritesRoute, "Favorites", OrganicIcons.HeartOutline, OrganicIcons.HeartFilled),
+    FEED(FeedRoute, R.string.nav_feed, OrganicIcons.Newspaper, OrganicIcons.Newspaper),
+    FAVORITES(FavoritesRoute, R.string.nav_favorites, OrganicIcons.HeartOutline, OrganicIcons.HeartFilled),
 }
 
 fun NavDestination?.toTopLevelDestination(): TopLevelDestination? =

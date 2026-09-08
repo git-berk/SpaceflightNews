@@ -1,3 +1,45 @@
 <resources>
     <string name="app_name">Spaceflight News</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_feed">Feed</string>
+    <string name="nav_favorites">Favorites</string>
+
+    <!-- Feed -->
+    <string name="feed_title">Spaceflight News</string>
+    <string name="feed_search_open">Search articles</string>
+    <string name="feed_search_close">Close search</string>
+    <string name="feed_search_clear">Clear search</string>
+    <string name="feed_search_placeholder">Search spaceflight news</string>
+    <string name="feed_suggestions_title">Suggested topics</string>
+    <string name="feed_offline_title">No connection</string>
+    <string name="feed_offline_message">We couldn\'t reach the newsroom. Check your connection and try again.</string>
+    <string name="feed_offline_action">Try again</string>
+    <string name="feed_offline_banner">Showing saved stories — couldn\'t reach the network.</string>
+    <string name="feed_append_error">Couldn\'t load more stories.</string>
+    <string name="feed_search_empty_title">No stories for “%1$s”</string>
+    <string name="feed_search_empty_message">Try a different keyword, or check the spelling.</string>
+
+    <string-array name="feed_search_suggestions">
+        <item>Starship</item>
+        <item>Artemis</item>
+        <item>Mars</item>
+        <item>Blue Origin</item>
+        <item>ISS</item>
+        <item>Europa</item>
+        <item>Falcon Heavy</item>
+    </string-array>
+
+    <!-- Favorites -->
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty_title">Nothing saved yet</string>
+    <string name="favorites_empty_message">Tap the heart on any story and it will wait for you here — no connection needed.</string>
+    <string name="favorites_empty_action">Browse the feed</string>
+    <plurals name="favorites_saved_count">
+        <item quantity="one">%1$d saved story</item>
+        <item quantity="other">%1$d saved stories</item>
+    </plurals>
+
+    <!-- Sharing -->
+    <string name="share_chooser_title">Share article</string>
 </resources>
