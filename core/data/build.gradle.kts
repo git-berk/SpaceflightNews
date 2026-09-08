@@ -55,7 +55,7 @@ dependencies {
     implementation(libs.androidx.room.paging)
     ksp(libs.androidx.room.compiler)
 
-    api(libs.androidx.paging.runtime)
+    api(libs.androidx.paging.common)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)

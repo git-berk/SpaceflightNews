@@ -26,6 +26,7 @@ interface ArticleApi {
         @Query("search") query: String,
         @Query("limit") limit: Int,
         @Query("offset") offset: Int,
+        @Query("published_at_lte") publishedAtLte: String? = null,
         @Query("ordering") ordering: String = "-published_at",
     ): PagedResponseDto<ArticleDto>
 

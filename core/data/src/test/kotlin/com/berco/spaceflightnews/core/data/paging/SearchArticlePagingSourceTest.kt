@@ -12,11 +12,19 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 class SearchArticlePagingSourceTest {
 
     private val api = FakeArticleApi()
-    private val source = SearchArticlePagingSource(api, "starship")
+    private val now = Instant.parse("2026-09-05T12:00:00Z")
+    private val source = SearchArticlePagingSource(
+        api,
+        "starship",
+        Clock.fixed(now, ZoneOffset.UTC),
+    )
 
     private fun refresh(key: Int? = null) = PagingSource.LoadParams.Refresh(
         key = key,
@@ -78,5 +86,28 @@ class SearchArticlePagingSourceTest {
 
         assertTrue(error is AppException)
         assertEquals(AppError.Network, (error as AppException).error)
+    }
+
+
+    @Test
+    fun `every page of one search is pinned to the same snapshot`() = runTest {
+        source.load(refresh())
+        source.load(
+            PagingSource.LoadParams.Append(key = 20, loadSize = 20, placeholdersEnabled = false),
+        )
+
+        val pins = api.calls.map { it.publishedAtLte }
+        assertEquals(listOf(now.toString(), now.toString()), pins)
+    }
+
+    @Test
+    fun `a later search session pins a later snapshot`() = runTest {
+        val later = Instant.parse("2026-09-05T13:00:00Z")
+        val next = SearchArticlePagingSource(api, "starship", Clock.fixed(later, ZoneOffset.UTC))
+
+        source.load(refresh())
+        next.load(refresh())
+
+        assertEquals(listOf(now.toString(), later.toString()), api.calls.map { it.publishedAtLte })
     }
 }

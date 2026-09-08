@@ -36,7 +36,7 @@ class ArticleRepositoryImpl @Inject constructor(
 
     override fun search(query: String): Flow<PagingData<Article>> = Pager(
         config = pagingConfig(),
-        pagingSourceFactory = { SearchArticlePagingSource(api, query) },
+        pagingSourceFactory = { SearchArticlePagingSource(api, query, clock) },
     ).flow
 
     /**

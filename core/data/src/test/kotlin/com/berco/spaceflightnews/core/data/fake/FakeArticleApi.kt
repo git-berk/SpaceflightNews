@@ -32,9 +32,10 @@ class FakeArticleApi : ArticleApi {
         query: String,
         limit: Int,
         offset: Int,
+        publishedAtLte: String?,
         ordering: String,
     ): PagedResponseDto<ArticleDto> {
-        calls += Call(limit, offset, null)
+        calls += Call(limit, offset, publishedAtLte)
         failWith?.let { throw it }
         return page(limit, offset)
     }
