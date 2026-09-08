@@ -70,13 +70,8 @@ class ArticleRemoteMediator(
             }
 
             // Paging asks for initialLoadSize up front and pageSize thereafter.
-            // Refresh deliberately fetches one page beyond that window: serving
-            // exactly initialLoadSize empties the table, Room then reports no
-            // next key, and an exhausted local source makes Paging ask this
-            // mediator to top up straight away — a second request before the
-            // reader has moved.
             val limit = when (loadType) {
-                LoadType.REFRESH -> state.config.initialLoadSize + state.config.pageSize
+                LoadType.REFRESH -> state.config.initialLoadSize
                 else -> state.config.pageSize
             }
 
