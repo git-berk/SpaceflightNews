@@ -23,7 +23,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
@@ -75,14 +74,7 @@ private fun FeedContent(
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    // Errors come from the mediator (search has none, so fall back to the
-    // combined state), but loading must also account for Room still querying:
-    // inside the cache TTL the mediator reports NotLoading immediately.
-    val mediatorRefresh = items.loadState.mediator?.refresh
-    val refreshError = (mediatorRefresh ?: items.loadState.refresh) as? LoadState.Error
-    val isRefreshing =
-        mediatorRefresh is LoadState.Loading || items.loadState.source.refresh is LoadState.Loading
-    val isEmpty = items.itemCount == 0
+    val loadState = items.loadState.toFeedLoadState(items.itemCount)
     val isSearchIdle = uiState.isSearchActive && uiState.query.trim().length < MIN_QUERY_LENGTH
 
     val feedListState = rememberLazyListState()
@@ -102,7 +94,7 @@ private fun FeedContent(
         },
     ) { contentPadding ->
         PullToRefreshBox(
-            isRefreshing = isRefreshing && !isEmpty,
+            isRefreshing = loadState.isRefreshing && !loadState.isEmpty,
             onRefresh = items::refresh,
             modifier = Modifier
                 .fillMaxSize()
@@ -111,9 +103,9 @@ private fun FeedContent(
             when {
                 isSearchIdle -> SearchSuggestions(onSelect = onQueryChange)
 
-                isRefreshing && isEmpty -> SkeletonList()
+                loadState.isRefreshing && loadState.isEmpty -> SkeletonList()
 
-                refreshError != null && isEmpty -> StatusView(
+                loadState.hasRefreshError && loadState.isEmpty -> StatusView(
                     icon = OrganicIcons.Alert,
                     title = "No connection",
                     message = "We couldn't reach the newsroom. Check your connection and try again.",
@@ -122,7 +114,7 @@ private fun FeedContent(
                     onAction = items::retry,
                 )
 
-                isEmpty && uiState.isSearchActive -> StatusView(
+                loadState.isEmpty && uiState.isSearchActive -> StatusView(
                     icon = OrganicIcons.Search,
                     title = "No stories for “${uiState.query}”",
                     message = "Try a different keyword, or check the spelling.",
@@ -131,7 +123,8 @@ private fun FeedContent(
                 else -> ArticleList(
                     items = items,
                     listState = if (uiState.isSearchActive) searchListState else feedListState,
-                    showOfflineBanner = refreshError != null,
+                    showOfflineBanner = loadState.hasRefreshError,
+                    appendState = loadState.append,
                     onArticleClick = onArticleClick,
                     onToggleFavorite = onToggleFavorite,
                 )
@@ -145,6 +138,7 @@ private fun ArticleList(
     items: LazyPagingItems<Article>,
     listState: LazyListState,
     showOfflineBanner: Boolean,
+    appendState: FeedLoadState.AppendState,
     onArticleClick: (Long) -> Unit,
     onToggleFavorite: (Article) -> Unit,
 ) {
@@ -184,19 +178,19 @@ private fun ArticleList(
             }
         }
 
-        when (val append = items.loadState.append) {
-            is LoadState.Loading -> item(key = "append-loading", contentType = "skeleton") {
-                SkeletonCard()
-            }
+        when (appendState) {
+            FeedLoadState.AppendState.Loading ->
+                item(key = "append-loading", contentType = "skeleton") { SkeletonCard() }
 
-            is LoadState.Error -> item(key = "append-error", contentType = "banner") {
-                InlineErrorRow("Couldn't load more stories.", onRetry = items::retry)
-            }
-
-            is LoadState.NotLoading ->
-                if (append.endOfPaginationReached && items.itemCount > 0) {
-                    item(key = "end-of-list", contentType = "footer") { EndOfListFooter() }
+            FeedLoadState.AppendState.Error ->
+                item(key = "append-error", contentType = "banner") {
+                    InlineErrorRow("Couldn't load more stories.", onRetry = items::retry)
                 }
+
+            FeedLoadState.AppendState.EndReached ->
+                item(key = "end-of-list", contentType = "footer") { EndOfListFooter() }
+
+            FeedLoadState.AppendState.Idle -> Unit
         }
     }
 }
