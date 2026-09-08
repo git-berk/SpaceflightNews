@@ -16,9 +16,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
+import com.berco.spaceflightnews.core.data.fake.fixedClock
+import kotlin.time.Instant
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -46,7 +45,7 @@ class FavoriteRepositoryTest {
             RuntimeEnvironment.getApplication(),
             SpaceflightDatabase::class.java,
         ).allowMainThreadQueries().build()
-        repository = FavoriteRepositoryImpl(db.favoriteDao(), Clock.fixed(now, ZoneOffset.UTC))
+        repository = FavoriteRepositoryImpl(db.favoriteDao(), fixedClock(now))
     }
 
     @After
@@ -108,6 +107,6 @@ class FavoriteRepositoryTest {
         newsSite = article.newsSite,
         authors = article.authors,
         url = article.url,
-        publishedAtMillis = now.toEpochMilli(),
+        publishedAtMillis = now.toEpochMilliseconds(),
     )
 }

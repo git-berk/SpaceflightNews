@@ -1,6 +1,6 @@
 package com.berco.spaceflightnews.core.model
 
-import java.time.Instant
+import kotlin.time.Instant
 
 data class Article(
     val id: Long,

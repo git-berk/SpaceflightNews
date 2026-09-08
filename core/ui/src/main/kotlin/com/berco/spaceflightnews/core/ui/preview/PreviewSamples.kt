@@ -2,7 +2,7 @@ package com.berco.spaceflightnews.core.ui.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.berco.spaceflightnews.core.model.Article
-import java.time.Instant
+import kotlin.time.Instant
 
 internal object PreviewSamples {
 

@@ -7,7 +7,7 @@ import com.berco.spaceflightnews.core.model.Article
 import com.berco.spaceflightnews.core.data.repository.FavoriteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.time.Clock
+import kotlin.time.Clock
 import javax.inject.Inject
 
 class FavoriteRepositoryImpl @Inject constructor(
@@ -27,7 +27,7 @@ class FavoriteRepositoryImpl @Inject constructor(
         } else {
             // Stores the whole article: the feed cache it came from is cleared
             // on every refresh, but the favourite has to survive that.
-            favoriteDao.insert(article.toFavoriteEntity(savedAtMillis = clock.millis()))
+            favoriteDao.insert(article.toFavoriteEntity(savedAtMillis = clock.now().toEpochMilliseconds()))
         }
     }
 

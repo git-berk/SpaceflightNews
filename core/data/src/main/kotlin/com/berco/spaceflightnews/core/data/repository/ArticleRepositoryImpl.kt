@@ -15,7 +15,7 @@ import com.berco.spaceflightnews.core.model.Article
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.time.Clock
+import kotlin.time.Clock
 import javax.inject.Inject
 
 class ArticleRepositoryImpl @Inject constructor(

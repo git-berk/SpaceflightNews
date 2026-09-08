@@ -8,7 +8,7 @@ import androidx.paging.PagingState
 import com.berco.spaceflightnews.core.data.repository.ArticleRepository
 import com.berco.spaceflightnews.core.model.Article
 import kotlinx.coroutines.flow.Flow
-import java.time.Instant
+import kotlin.time.Instant
 
 /**
  * Backed by a real [Pager] rather than `PagingData.from`, whose static load

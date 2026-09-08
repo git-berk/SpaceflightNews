@@ -4,7 +4,7 @@ import com.berco.spaceflightnews.core.data.local.entity.ArticleEntity
 import com.berco.spaceflightnews.core.data.local.entity.FavoriteArticleEntity
 import com.berco.spaceflightnews.core.data.remote.dto.ArticleDto
 import com.berco.spaceflightnews.core.model.Article
-import java.time.Instant
+import kotlin.time.Instant
 
 /**
  * The feed contains ~59 records dated before 2000, including 1970 epoch stubs.
@@ -26,8 +26,8 @@ internal fun String.cleanSummary(): String = replace(RSS_TRAILER, "").trim()
 
 internal fun String?.toPublishedAtMillis(): Long? = this
     ?.let { runCatching { Instant.parse(it) }.getOrNull() }
-    ?.takeIf { it.isAfter(MIN_PLAUSIBLE_DATE) }
-    ?.toEpochMilli()
+    ?.takeIf { it > MIN_PLAUSIBLE_DATE }
+    ?.toEpochMilliseconds()
 
 fun ArticleDto.toEntity(): ArticleEntity = ArticleEntity(
     id = id,
@@ -48,7 +48,7 @@ fun ArticleDto.toDomain(isFavorite: Boolean = false): Article = Article(
     newsSite = newsSite,
     authors = authors.map { it.name },
     url = url,
-    publishedAt = publishedAt.toPublishedAtMillis()?.let(Instant::ofEpochMilli),
+    publishedAt = publishedAt.toPublishedAtMillis()?.let(Instant::fromEpochMilliseconds),
     isFavorite = isFavorite,
 )
 
@@ -60,7 +60,7 @@ fun ArticleEntity.toDomain(isFavorite: Boolean = false): Article = Article(
     newsSite = newsSite,
     authors = authors,
     url = url,
-    publishedAt = publishedAtMillis?.let(Instant::ofEpochMilli),
+    publishedAt = publishedAtMillis?.let(Instant::fromEpochMilliseconds),
     isFavorite = isFavorite,
 )
 
@@ -72,7 +72,7 @@ fun FavoriteArticleEntity.toDomain(): Article = Article(
     newsSite = newsSite,
     authors = authors,
     url = url,
-    publishedAt = publishedAtMillis?.let(Instant::ofEpochMilli),
+    publishedAt = publishedAtMillis?.let(Instant::fromEpochMilliseconds),
     isFavorite = true,
 )
 
@@ -84,6 +84,6 @@ fun Article.toFavoriteEntity(savedAtMillis: Long): FavoriteArticleEntity = Favor
     newsSite = newsSite,
     authors = authors,
     url = url,
-    publishedAtMillis = publishedAt?.toEpochMilli(),
+    publishedAtMillis = publishedAt?.toEpochMilliseconds(),
     savedAtMillis = savedAtMillis,
 )

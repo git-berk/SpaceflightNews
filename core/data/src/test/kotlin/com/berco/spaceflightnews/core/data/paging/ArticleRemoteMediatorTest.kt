@@ -23,9 +23,9 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
+import com.berco.spaceflightnews.core.data.fake.fixedClock
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 
 @OptIn(ExperimentalPagingApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -50,7 +50,7 @@ class ArticleRemoteMediatorTest {
     fun tearDown() = db.close()
 
     private fun mediator(at: Instant = now) =
-        ArticleRemoteMediator(api, db, Clock.fixed(at, ZoneOffset.UTC))
+        ArticleRemoteMediator(api, db, fixedClock(at))
 
     private val config = PagingConfig(
         pageSize = ArticleRemoteMediator.PAGE_SIZE,
@@ -180,21 +180,21 @@ class ArticleRemoteMediatorTest {
 
     @Test
     fun `appending does not extend the refresh TTL`() = runTest {
-        val started = now.minusMillis(ArticleRemoteMediator.CACHE_TTL_MILLIS - 1_000)
+        val started = now - (ArticleRemoteMediator.CACHE_TTL_MILLIS - 1_000).milliseconds
         seedKey(refreshedAt = started)
 
         mediator().load(LoadType.APPEND, emptyState())
 
-        assertEquals(started.toEpochMilli(), db.remoteKeyDao().get()!!.lastRefreshedAtMillis)
+        assertEquals(started.toEpochMilliseconds(), db.remoteKeyDao().get()!!.lastRefreshedAtMillis)
     }
 
     @Test
     fun `a long scroll session still refreshes on the next cold start`() = runTest {
-        val started = now.minusMillis(ArticleRemoteMediator.CACHE_TTL_MILLIS - 1_000)
+        val started = now - (ArticleRemoteMediator.CACHE_TTL_MILLIS - 1_000).milliseconds
         seedKey(refreshedAt = started)
         mediator().load(LoadType.APPEND, emptyState())
 
-        val later = started.plusMillis(ArticleRemoteMediator.CACHE_TTL_MILLIS + 1)
+        val later = started + (ArticleRemoteMediator.CACHE_TTL_MILLIS + 1).milliseconds
 
         assertEquals(
             RemoteMediator.InitializeAction.LAUNCH_INITIAL_REFRESH,
@@ -204,7 +204,7 @@ class ArticleRemoteMediatorTest {
 
     @Test
     fun `appending carries the original snapshot forward`() = runTest {
-        val started = now.minusMillis(1_000)
+        val started = now - 1_000.milliseconds
         seedKey(refreshedAt = started)
 
         mediator().load(LoadType.APPEND, emptyState())
@@ -214,7 +214,7 @@ class ArticleRemoteMediatorTest {
 
     @Test
     fun `initialize skips refresh inside the TTL window`() = runTest {
-        seedKey(refreshedAt = now.minusMillis(ArticleRemoteMediator.CACHE_TTL_MILLIS - 1))
+        seedKey(refreshedAt = now - (ArticleRemoteMediator.CACHE_TTL_MILLIS - 1).milliseconds)
 
         assertEquals(
             RemoteMediator.InitializeAction.SKIP_INITIAL_REFRESH,
@@ -224,7 +224,7 @@ class ArticleRemoteMediatorTest {
 
     @Test
     fun `initialize refreshes once the TTL has lapsed`() = runTest {
-        seedKey(refreshedAt = now.minusMillis(ArticleRemoteMediator.CACHE_TTL_MILLIS + 1))
+        seedKey(refreshedAt = now - (ArticleRemoteMediator.CACHE_TTL_MILLIS + 1).milliseconds)
 
         assertEquals(
             RemoteMediator.InitializeAction.LAUNCH_INITIAL_REFRESH,
@@ -244,7 +244,7 @@ class ArticleRemoteMediatorTest {
         RemoteKeyEntity(
             nextOffset = 20,
             snapshotIso = refreshedAt.toString(),
-            lastRefreshedAtMillis = refreshedAt.toEpochMilli(),
+            lastRefreshedAtMillis = refreshedAt.toEpochMilliseconds(),
         ),
     )
 
@@ -256,6 +256,6 @@ class ArticleRemoteMediatorTest {
         newsSite = "NASA",
         authors = emptyList(),
         url = "https://example.com/999",
-        publishedAtMillis = now.toEpochMilli(),
+        publishedAtMillis = now.toEpochMilliseconds(),
     )
 }

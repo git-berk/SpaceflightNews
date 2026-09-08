@@ -1,10 +1,11 @@
 package com.berco.spaceflightnews.core.ui
 
-import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.Locale
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 /**
  * Relative under 48 hours, absolute after, matching the design spec.
@@ -17,19 +18,18 @@ class DateFormatter(
     private val absolute: DateTimeFormatter =
         DateTimeFormatter.ofPattern("d MMM yyyy", locale)
 
-    fun format(instant: Instant?, now: Instant = Instant.now()): String? {
+    fun format(instant: Instant?, now: Instant = Clock.System.now()): String? {
         if (instant == null) return null
 
-        val minutes = ChronoUnit.MINUTES.between(instant, now)
+        val elapsed = now - instant
         // Future-dated articles read as brand new rather than negative.
-        if (minutes < 1) return "Just now"
+        if (elapsed.inWholeMinutes < 1) return "Just now"
 
-        val hours = ChronoUnit.HOURS.between(instant, now)
         return when {
-            hours < 1 -> "${minutes}m ago"
-            hours < 24 -> "${hours}h ago"
-            hours < 48 -> "Yesterday"
-            else -> absolute.format(instant.atZone(zoneId))
+            elapsed.inWholeHours < 1 -> "${elapsed.inWholeMinutes}m ago"
+            elapsed.inWholeHours < 24 -> "${elapsed.inWholeHours}h ago"
+            elapsed.inWholeHours < 48 -> "Yesterday"
+            else -> absolute.format(instant.toJavaInstant().atZone(zoneId))
         }
     }
 }

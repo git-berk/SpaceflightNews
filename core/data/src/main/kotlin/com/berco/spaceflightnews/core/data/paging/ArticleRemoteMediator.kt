@@ -11,15 +11,15 @@ import com.berco.spaceflightnews.core.data.local.entity.RemoteKeyEntity
 import com.berco.spaceflightnews.core.data.mapper.asAppException
 import com.berco.spaceflightnews.core.data.mapper.toEntity
 import com.berco.spaceflightnews.core.data.remote.ArticleApi
-import java.time.Clock
-import java.time.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalPagingApi::class)
 class ArticleRemoteMediator(
     private val api: ArticleApi,
     private val db: SpaceflightDatabase,
-    private val clock: Clock = Clock.systemUTC(),
+    private val clock: Clock = Clock.System,
 ) : RemoteMediator<Int, ArticleEntity>() {
 
     private val articleDao = db.articleDao()
@@ -34,7 +34,7 @@ class ArticleRemoteMediator(
         val lastRefreshed = keyDao.get()?.lastRefreshedAtMillis
             ?: return InitializeAction.LAUNCH_INITIAL_REFRESH
 
-        val age = clock.millis() - lastRefreshed
+        val age = clock.now().toEpochMilliseconds() - lastRefreshed
         return if (age < CACHE_TTL_MILLIS) {
             InitializeAction.SKIP_INITIAL_REFRESH
         } else {
@@ -50,8 +50,8 @@ class ArticleRemoteMediator(
             val load = when (loadType) {
                 LoadType.REFRESH -> LoadKey(
                     offset = 0,
-                    snapshotIso = Instant.now(clock).toString(),
-                    refreshedAtMillis = clock.millis(),
+                    snapshotIso = clock.now().toString(),
+                    refreshedAtMillis = clock.now().toEpochMilliseconds(),
                 )
 
                 // Newest-first feed; there is never anything above the first page.

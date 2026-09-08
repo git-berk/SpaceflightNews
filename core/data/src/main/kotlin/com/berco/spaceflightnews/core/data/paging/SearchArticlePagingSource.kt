@@ -6,8 +6,7 @@ import com.berco.spaceflightnews.core.data.mapper.asAppException
 import com.berco.spaceflightnews.core.data.mapper.toDomain
 import com.berco.spaceflightnews.core.data.remote.ArticleApi
 import com.berco.spaceflightnews.core.model.Article
-import java.time.Clock
-import java.time.Instant
+import kotlin.time.Clock
 
 /**
  * Search results are transient, so they go straight from the network to the UI
@@ -25,7 +24,7 @@ class SearchArticlePagingSource(
      * offset and a page re-serves an id the list is already showing, which
      * crashes LazyColumn on the duplicate key.
      */
-    private val snapshotIso = Instant.now(clock).toString()
+    private val snapshotIso = clock.now().toString()
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Article> {
         val offset = params.key ?: 0
