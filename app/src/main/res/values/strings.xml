@@ -40,6 +40,11 @@
         <item quantity="other">%1$d saved stories</item>
     </plurals>
 
+    <!-- Article detail -->
+    <string name="detail_not_found_title">Story unavailable</string>
+    <string name="detail_not_found_message">We couldn\'t open this story. It may have dropped out of the offline cache — check your connection and try the feed again.</string>
+    <string name="detail_not_found_action">Back to the feed</string>
+
     <!-- Sharing -->
     <string name="share_chooser_title">Share article</string>
 </resources>

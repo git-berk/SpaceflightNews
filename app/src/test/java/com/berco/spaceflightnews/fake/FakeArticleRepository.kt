@@ -7,6 +7,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.berco.spaceflightnews.core.data.repository.ArticleRepository
 import com.berco.spaceflightnews.core.model.Article
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Instant
 
@@ -28,7 +29,17 @@ class FakeArticleRepository : ArticleRepository {
         return pagerOf { searchArticles }
     }
 
-    override suspend fun getArticle(id: Long): Article? = feedArticles.find { it.id == id }
+    var getArticleCalls = 0
+        private set
+
+    /** Holds the read open so a test can let other collectors run first. */
+    var getArticleDelayMillis = 0L
+
+    override suspend fun getArticle(id: Long): Article? {
+        getArticleCalls++
+        if (getArticleDelayMillis > 0) delay(getArticleDelayMillis)
+        return feedArticles.find { it.id == id }
+    }
 
     private fun pagerOf(items: () -> List<Article>) = Pager(
         config = PagingConfig(pageSize = 20, enablePlaceholders = false),
