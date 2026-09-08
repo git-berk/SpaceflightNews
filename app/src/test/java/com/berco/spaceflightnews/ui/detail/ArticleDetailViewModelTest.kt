@@ -6,6 +6,7 @@ import com.berco.spaceflightnews.fake.FakeArticleRepository
 import com.berco.spaceflightnews.fake.FakeFavoriteRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -39,12 +40,18 @@ class ArticleDetailViewModelTest {
         SavedStateHandle(mapOf("articleId" to id)),
     )
 
+    /** uiState only runs while collected, exactly as the screen collects it. */
+    private fun TestScope.observe(vm: ArticleDetailViewModel) {
+        backgroundScope.launch { vm.uiState.collect {} }
+        runCurrent()
+    }
+
     private fun content(state: ArticleDetailUiState) = state as ArticleDetailUiState.Content
 
     @Test
     fun `a cached article becomes content`() = runTest(mainDispatcherRule.testDispatcher) {
         val vm = viewModel()
-        runCurrent()
+        observe(vm)
 
         assertEquals(ARTICLE_ID, content(vm.uiState.value).article.id)
     }
@@ -53,9 +60,8 @@ class ArticleDetailViewModelTest {
     fun `a missing article resolves to not found rather than loading forever`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val vm = viewModel(MISSING_ID)
-            runCurrent()
+            observe(vm)
 
-            // The old shape used null for both, so this case span the spinner forever.
             assertEquals(ArticleDetailUiState.NotFound, vm.uiState.value)
         }
 
@@ -67,19 +73,20 @@ class ArticleDetailViewModelTest {
             runCurrent()
             job.cancel()
 
-            // Longer than any WhileSubscribed timeout the screen might use.
+            // Longer than the WhileSubscribed timeout, so the shared flow stops.
             advanceTimeBy(10_000)
             job = backgroundScope.launch { vm.uiState.collect {} }
             runCurrent()
 
             assertEquals(1, articles.getArticleCalls)
+            assertEquals(ARTICLE_ID, content(vm.uiState.value).article.id)
         }
 
     @Test
     fun `favouriting updates the article already on screen`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val vm = viewModel()
-            runCurrent()
+            observe(vm)
             assertFalse(content(vm.uiState.value).article.isFavorite)
 
             vm.onToggleFavorite(content(vm.uiState.value).article)
@@ -98,8 +105,8 @@ class ArticleDetailViewModelTest {
             articles.getArticleDelayMillis = 100
 
             val vm = viewModel()
+            observe(vm)
             advanceTimeBy(200)
-            runCurrent()
 
             assertTrue(content(vm.uiState.value).article.isFavorite)
         }
@@ -108,7 +115,7 @@ class ArticleDetailViewModelTest {
     fun `a favourite emission cannot resurrect a missing article`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val vm = viewModel(MISSING_ID)
-            runCurrent()
+            observe(vm)
 
             favorites.toggle(FakeArticleRepository.article(MISSING_ID))
             runCurrent()

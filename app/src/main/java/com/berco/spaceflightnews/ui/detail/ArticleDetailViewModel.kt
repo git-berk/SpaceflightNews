@@ -11,9 +11,10 @@ import com.berco.spaceflightnews.core.model.Article
 import com.berco.spaceflightnews.ui.detail.navigation.ArticleDetailRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,6 +28,13 @@ sealed interface ArticleDetailUiState {
     data object NotFound : ArticleDetailUiState
 }
 
+/** The read on its own, before favourite state is layered on. */
+private sealed interface ArticleLoad {
+    data object Pending : ArticleLoad
+    data object Missing : ArticleLoad
+    data class Ready(val article: Article) : ArticleLoad
+}
+
 @HiltViewModel
 class ArticleDetailViewModel @Inject constructor(
     private val articleRepository: ArticleRepository,
@@ -36,48 +44,43 @@ class ArticleDetailViewModel @Inject constructor(
 
     private val articleId: Long = savedStateHandle.toRoute<ArticleDetailRoute>().articleId
 
-    private val _uiState = MutableStateFlow<ArticleDetailUiState>(ArticleDetailUiState.Loading)
-    val uiState: StateFlow<ArticleDetailUiState> = _uiState.asStateFlow()
-
-    /** Null until the first emission, which is not the same as "no favourites". */
-    private var favoriteIds: Set<Long>? = null
+    /**
+     * Hot, so the read survives the screen going away and coming back. A cold
+     * `flow { }` here would re-run its builder on every resubscription, which for
+     * an uncached article means another network call.
+     */
+    private val article = MutableStateFlow<ArticleLoad>(ArticleLoad.Pending)
 
     init {
         loadArticle()
-        observeFavorite()
     }
 
     /**
-     * Read once. Held in state rather than rebuilt from a flow, so returning to
-     * the screen after a spell in the background does not re-read it — which for
-     * an uncached article means another network call.
+     * Favourite state is the one input that keeps changing, so it stays a stream.
+     * Combining rather than writing into a shared state means a favourite emitted
+     * while the read is still in flight cannot be lost.
      */
+    val uiState: StateFlow<ArticleDetailUiState> =
+        combine(article, favoriteRepository.observeFavoriteIds()) { load, favoriteIds ->
+            when (load) {
+                ArticleLoad.Pending -> ArticleDetailUiState.Loading
+                ArticleLoad.Missing -> ArticleDetailUiState.NotFound
+                is ArticleLoad.Ready -> ArticleDetailUiState.Content(
+                    load.article.copy(isFavorite = articleId in favoriteIds),
+                )
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(STOP_TIMEOUT),
+            initialValue = ArticleDetailUiState.Loading,
+        )
+
     private fun loadArticle() {
         viewModelScope.launch {
-            val article = articleRepository.getArticle(articleId)
-            _uiState.value = when (article) {
-                null -> ArticleDetailUiState.NotFound
-                // The observer may have emitted while this read was in flight; its
-                // answer wins. Falling back to the repository's own value keeps the
-                // first frame right when nothing has been observed yet.
-                else -> ArticleDetailUiState.Content(article.withFavorite(favoriteIds))
-            }
-        }
-    }
-
-    /** Favourite state is the one part that keeps changing after the read. */
-    private fun observeFavorite() {
-        viewModelScope.launch {
-            favoriteRepository.observeFavoriteIds().collect { ids ->
-                favoriteIds = ids
-                _uiState.update { state ->
-                    when (state) {
-                        is ArticleDetailUiState.Content ->
-                            state.copy(article = state.article.withFavorite(ids))
-
-                        else -> state
-                    }
-                }
+            val loaded = articleRepository.getArticle(articleId)
+            article.value = when (loaded) {
+                null -> ArticleLoad.Missing
+                else -> ArticleLoad.Ready(loaded)
             }
         }
     }
@@ -86,6 +89,7 @@ class ArticleDetailViewModel @Inject constructor(
         viewModelScope.launch { favoriteRepository.toggle(article) }
     }
 
-    private fun Article.withFavorite(ids: Set<Long>?): Article =
-        if (ids == null) this else copy(isFavorite = id in ids)
+    private companion object {
+        const val STOP_TIMEOUT = 5_000L
+    }
 }
