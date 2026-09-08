@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OrganicColors.Accent700: 5.72:1 against the cream foreground, where the
+         base accent manages only 3.03:1 and the thin stroke muddies at 48dp. -->
+    <color name="ic_launcher_background">#8C491A</color>
+</resources>
