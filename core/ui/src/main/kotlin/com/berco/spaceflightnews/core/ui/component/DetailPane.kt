@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.berco.spaceflightnews.core.model.Article
 import com.berco.spaceflightnews.core.ui.OrganicIcons
+import com.berco.spaceflightnews.core.ui.readableWidth
 import com.berco.spaceflightnews.core.ui.preview.PreviewSamples
 import com.berco.spaceflightnews.core.ui.theme.OrganicRadius
 import com.berco.spaceflightnews.core.ui.theme.SpaceflightTheme
@@ -56,7 +57,7 @@ fun DetailPane(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.readableWidth(),
         containerColor = MaterialTheme.colorScheme.surface,
         // Content runs edge to edge; the trailing spacer keeps the last line
         // reachable above the gesture bar.

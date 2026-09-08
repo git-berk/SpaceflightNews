@@ -32,6 +32,7 @@ import androidx.paging.compose.itemKey
 import androidx.compose.material3.TopAppBarDefaults
 import com.berco.spaceflightnews.core.model.Article
 import com.berco.spaceflightnews.core.ui.DateFormatter
+import com.berco.spaceflightnews.core.ui.readableWidth
 import com.berco.spaceflightnews.core.ui.OrganicIcons
 import com.berco.spaceflightnews.core.ui.component.ArticleCard
 import com.berco.spaceflightnews.core.ui.component.EndOfListFooter
@@ -88,6 +89,7 @@ private fun FeedContent(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             FeedTopBar(
+                modifier = Modifier.readableWidth(),
                 uiState = uiState,
                 scrollBehavior = scrollBehavior,
                 onQueryChange = onQueryChange,
@@ -100,6 +102,7 @@ private fun FeedContent(
             onRefresh = items::refresh,
             modifier = Modifier
                 .fillMaxSize()
+                .readableWidth()
                 .padding(contentPadding),
         ) {
             when {

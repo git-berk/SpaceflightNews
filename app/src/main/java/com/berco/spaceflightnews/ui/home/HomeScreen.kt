@@ -3,6 +3,7 @@ package com.berco.spaceflightnews.ui.home
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +19,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.res.stringResource
 import com.berco.spaceflightnews.core.ui.component.BottomNavItem
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.berco.spaceflightnews.core.ui.component.OrganicBottomNav
+import com.berco.spaceflightnews.core.ui.component.OrganicNavigationRail
 import com.berco.spaceflightnews.ui.favorites.navigation.favoritesScreen
 import com.berco.spaceflightnews.ui.feed.navigation.FeedRoute
 import com.berco.spaceflightnews.ui.feed.navigation.feedScreen
@@ -52,39 +56,58 @@ fun HomeScreen(
         }
     }
 
+    // A landscape phone is ~830dp wide, so this is a rotation away, not just a
+    // tablet case. Vertical space is the scarce axis there; the rail gives it back.
+    val compactWidth = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass ==
+        WindowWidthSizeClass.COMPACT
+
+    val onSelectTab: (String) -> Unit = { key ->
+        tabController.navigateToTopLevel(TopLevelDestination.valueOf(key))
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
         // Each tab owns its status-bar inset through its own top bar.
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            OrganicBottomNav(
-                items = items,
-                selectedKey = selected.name,
-                onSelect = { key ->
-                    tabController.navigateToTopLevel(TopLevelDestination.valueOf(key))
-                },
-            )
+            if (compactWidth) {
+                OrganicBottomNav(
+                    items = items,
+                    selectedKey = selected.name,
+                    onSelect = onSelectTab,
+                )
+            }
         },
     ) { contentPadding ->
-        NavHost(
-            navController = tabController,
-            startDestination = FeedRoute,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = contentPadding.calculateBottomPadding())
-                .consumeWindowInsets(contentPadding),
-            // Tabs are siblings, so they cross-fade rather than slide.
-            enterTransition = { fadeIn(tween(TAB_FADE_MILLIS)) },
-            exitTransition = { fadeOut(tween(TAB_FADE_MILLIS)) },
-            popEnterTransition = { fadeIn(tween(TAB_FADE_MILLIS)) },
-            popExitTransition = { fadeOut(tween(TAB_FADE_MILLIS)) },
-        ) {
-            feedScreen(onArticleClick = onArticleClick)
-            favoritesScreen(
-                onArticleClick = onArticleClick,
-                onBrowseFeed = { tabController.navigateToTopLevel(TopLevelDestination.FEED) },
-            )
+        Row(Modifier.fillMaxSize()) {
+            if (!compactWidth) {
+                OrganicNavigationRail(
+                    items = items,
+                    selectedKey = selected.name,
+                    onSelect = onSelectTab,
+                )
+            }
+
+            NavHost(
+                navController = tabController,
+                startDestination = FeedRoute,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = contentPadding.calculateBottomPadding())
+                    .consumeWindowInsets(contentPadding),
+                // Tabs are siblings, so they cross-fade rather than slide.
+                enterTransition = { fadeIn(tween(TAB_FADE_MILLIS)) },
+                exitTransition = { fadeOut(tween(TAB_FADE_MILLIS)) },
+                popEnterTransition = { fadeIn(tween(TAB_FADE_MILLIS)) },
+                popExitTransition = { fadeOut(tween(TAB_FADE_MILLIS)) },
+            ) {
+                feedScreen(onArticleClick = onArticleClick)
+                favoritesScreen(
+                    onArticleClick = onArticleClick,
+                    onBrowseFeed = { tabController.navigateToTopLevel(TopLevelDestination.FEED) },
+                )
+            }
         }
     }
 }

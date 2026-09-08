@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- OrganicColors.Bg -->
-    <color name="splash_background">#F5EAD8</color>
+    <color name="app_background">#F5EAD8</color>
 </resources>

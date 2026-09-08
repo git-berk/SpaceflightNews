@@ -26,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.berco.spaceflightnews.core.model.Article
 import com.berco.spaceflightnews.core.ui.DateFormatter
+import com.berco.spaceflightnews.core.ui.readableWidth
 import com.berco.spaceflightnews.core.ui.OrganicIcons
 import com.berco.spaceflightnews.core.ui.component.ArticleCard
 import com.berco.spaceflightnews.core.ui.component.StatusView
@@ -43,6 +44,7 @@ fun FavoritesScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .readableWidth()
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         FavoritesHeader(
