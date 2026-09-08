@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -82,6 +83,13 @@ private fun FeedContent(
 
     val feedListState = rememberLazyListState()
     val searchListState = rememberLazyListState()
+
+    // Each query produces a different list, so the previous offset is meaningless.
+    // Without this the reader lands mid-way through unrelated results, because a
+    // LazyColumn falls back to the index once the visible item's key disappears.
+    LaunchedEffect(uiState.query) {
+        searchListState.scrollToItem(0)
+    }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
