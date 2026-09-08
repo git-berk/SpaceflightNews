@@ -10,6 +10,7 @@ import com.berco.spaceflightnews.fake.FakeFavoriteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -132,6 +133,24 @@ class FeedViewModelTest {
             advanceTimeBy(PAST_DEBOUNCE)
 
             assertEquals(listOf("starship"), articles.searchQueries)
+        }
+
+    @Test
+    fun `a searchable query reports work before the debounce elapses`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val vm = viewModel()
+            val emissions = mutableListOf<PagingData<Article>>()
+            backgroundScope.launch { vm.searchResults.collect { emissions += it } }
+            runCurrent()
+            val before = emissions.size
+
+            vm.onQueryChange("starship")
+            advanceTimeBy(100)
+
+            // Without a new emission the screen keeps the previous empty page,
+            // which renders as "no results" until the search actually starts.
+            assertEquals(before + 1, emissions.size)
+            assertTrue(articles.searchQueries.isEmpty())
         }
 
     @Test

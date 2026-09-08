@@ -3,6 +3,8 @@ package com.berco.spaceflightnews.ui.feed
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
@@ -11,20 +13,20 @@ import com.berco.spaceflightnews.core.data.repository.FavoriteRepository
 import com.berco.spaceflightnews.core.model.Article
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
 
 /** Shared with the screen, which must not show "no results" for a short query. */
 internal const val MIN_QUERY_LENGTH = 2
@@ -34,7 +36,7 @@ data class FeedUiState(
     val isSearchActive: Boolean = false,
 )
 
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class FeedViewModel @Inject constructor(
     articleRepository: ArticleRepository,
@@ -63,14 +65,20 @@ class FeedViewModel @Inject constructor(
 
     /** Network-only, so favourite state is layered on the same way. */
     val searchResults: Flow<PagingData<Article>> = query
-        .debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds)
         .map { it.trim() }
         .distinctUntilChanged()
         .flatMapLatest { text ->
             if (text.length < MIN_QUERY_LENGTH) {
                 flowOf(PagingData.empty())
             } else {
-                articleRepository.search(text)
+                flow {
+                    // Announced before the debounce so the screen shows skeletons
+                    // while keystrokes settle. Emitting nothing here would leave the
+                    // previous page on screen, and an empty one reads as "no results".
+                    emit(PagingData.empty<Article>(SEARCH_PENDING))
+                    delay(SEARCH_DEBOUNCE_MILLIS)
+                    emitAll(articleRepository.search(text))
+                }
             }
         }
         .cachedIn(viewModelScope)
@@ -92,6 +100,13 @@ class FeedViewModel @Inject constructor(
     }
 
     private companion object {
+        /** flatMapLatest cancels the pending delay, so this debounces as before. */
+        val SEARCH_PENDING = LoadStates(
+            refresh = LoadState.Loading,
+            prepend = LoadState.NotLoading(endOfPaginationReached = true),
+            append = LoadState.NotLoading(endOfPaginationReached = true),
+        )
+
         const val KEY_QUERY = "feed.query"
         const val KEY_SEARCH_ACTIVE = "feed.searchActive"
         const val SEARCH_DEBOUNCE_MILLIS = 500L
