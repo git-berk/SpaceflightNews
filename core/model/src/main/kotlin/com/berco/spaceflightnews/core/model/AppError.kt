@@ -6,6 +6,7 @@ package com.berco.spaceflightnews.core.model
  */
 sealed interface AppError {
     data object Network : AppError
+    data object RateLimited : AppError
     data class Http(val code: Int) : AppError
     data object Serialization : AppError
     data class Unknown(val cause: Throwable) : AppError

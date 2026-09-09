@@ -13,9 +13,16 @@ import java.io.IOException
 fun Throwable.toAppError(): AppError = when (this) {
     is AppException -> error
     is IOException -> AppError.Network
-    is HttpException -> AppError.Http(code())
+    is HttpException -> if (code() == HTTP_TOO_MANY_REQUESTS) {
+        AppError.RateLimited
+    } else {
+        AppError.Http(code())
+    }
     is SerializationException -> AppError.Serialization
     else -> AppError.Unknown(this)
 }
 
 fun Throwable.asAppException(): AppException = AppException(toAppError())
+
+/** RFC 6585: the only meaning 429 carries. */
+private const val HTTP_TOO_MANY_REQUESTS = 429

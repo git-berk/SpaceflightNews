@@ -15,6 +15,10 @@
     <string name="feed_offline_title">No connection</string>
     <string name="feed_offline_message">We couldn\'t reach the newsroom. Check your connection and try again.</string>
     <string name="feed_offline_action">Try again</string>
+    <string name="feed_rate_limited_title">Too many requests</string>
+    <string name="feed_rate_limited_message">The newsroom is asking us to slow down. Wait a moment before trying again.</string>
+    <string name="feed_error_title">Something went wrong</string>
+    <string name="feed_error_message">The newsroom couldn\'t be reached. Try again in a moment.</string>
     <string name="feed_offline_banner">Showing saved stories — couldn\'t reach the network.</string>
     <string name="feed_append_error">Couldn\'t load more stories.</string>
     <string name="feed_search_empty_title">No stories for “%1$s”</string>

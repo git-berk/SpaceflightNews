@@ -32,6 +32,13 @@ class ErrorMapperTest {
     }
 
     @Test
+    fun `429 maps to rate limited, not a generic http failure`() {
+        val error = HttpException(Response.error<Unit>(429, "".toResponseBody())).toAppError()
+
+        assertEquals(AppError.RateLimited, error)
+    }
+
+    @Test
     fun `serialization failures map to serialization`() {
         assertEquals(AppError.Serialization, SerializationException("bad json").toAppError())
     }
