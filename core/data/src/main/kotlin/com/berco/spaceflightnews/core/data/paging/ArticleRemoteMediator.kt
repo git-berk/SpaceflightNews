@@ -12,7 +12,6 @@ import com.berco.spaceflightnews.core.data.mapper.asAppException
 import com.berco.spaceflightnews.core.data.mapper.toEntity
 import com.berco.spaceflightnews.core.data.remote.ArticleApi
 import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalPagingApi::class)

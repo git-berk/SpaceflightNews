@@ -1,11 +1,9 @@
 package com.berco.spaceflightnews.core.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,7 +35,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.berco.spaceflightnews.core.ui.preview.ArticleProvider
 import com.berco.spaceflightnews.core.ui.preview.ComponentPreviews
-import com.berco.spaceflightnews.core.ui.preview.PreviewSamples
 import com.berco.spaceflightnews.core.ui.preview.PreviewSurface
 import com.berco.spaceflightnews.core.ui.OrganicIcons
 import com.berco.spaceflightnews.core.ui.theme.OrganicRadius
@@ -114,61 +111,6 @@ fun ArticleCard(
                         .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.09f)),
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun ArticleRow(
-    article: Article,
-    dateLabel: String?,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(OrganicRadius.Row)
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .then(
-                if (selected) {
-                    Modifier
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .border(2.dp, MaterialTheme.colorScheme.primary, shape)
-                } else {
-                    Modifier
-                },
-            )
-            .clickable(onClick = onClick)
-            .padding(14.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        WashedImage(
-            url = article.imageUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .width(108.dp)
-                .height(80.dp)
-                .clip(RoundedCornerShape(18.dp)),
-        )
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = article.title,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(8.dp))
-            SourceAndDate(article.newsSite, dateLabel)
-        }
-        if (article.isFavorite) {
-            Icon(
-                imageVector = OrganicIcons.HeartFilled,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(19.dp),
-            )
         }
     }
 }
