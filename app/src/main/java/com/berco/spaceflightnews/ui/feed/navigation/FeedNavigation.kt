@@ -10,8 +10,9 @@ data object FeedRoute
 
 fun NavGraphBuilder.feedScreen(
     onArticleClick: (Long) -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     composable<FeedRoute> {
-        FeedScreen(onArticleClick = onArticleClick)
+        FeedScreen(onArticleClick = onArticleClick, onSearchClick = onSearchClick)
     }
 }

@@ -26,6 +26,8 @@ import com.berco.spaceflightnews.core.ui.component.OrganicNavigationRail
 import com.berco.spaceflightnews.ui.favorites.navigation.favoritesScreen
 import com.berco.spaceflightnews.ui.feed.navigation.FeedRoute
 import com.berco.spaceflightnews.ui.feed.navigation.feedScreen
+import com.berco.spaceflightnews.ui.search.navigation.navigateToSearch
+import com.berco.spaceflightnews.ui.search.navigation.searchScreen
 import com.berco.spaceflightnews.ui.navigation.TopLevelDestination
 import com.berco.spaceflightnews.ui.navigation.navigateToTopLevel
 import com.berco.spaceflightnews.ui.navigation.toTopLevelDestination
@@ -102,7 +104,16 @@ fun HomeScreen(
                 popEnterTransition = { fadeIn(tween(TAB_FADE_MILLIS)) },
                 popExitTransition = { fadeOut(tween(TAB_FADE_MILLIS)) },
             ) {
-                feedScreen(onArticleClick = onArticleClick)
+                feedScreen(
+                    onArticleClick = onArticleClick,
+                    onSearchClick = tabController::navigateToSearch,
+                )
+                // Inside the tab graph, so the bottom bar stays put and back
+                // returns to the feed without a BackHandler.
+                searchScreen(
+                    onArticleClick = onArticleClick,
+                    onBack = tabController::popBackStack,
+                )
                 favoritesScreen(
                     onArticleClick = onArticleClick,
                     onBrowseFeed = { tabController.navigateToTopLevel(TopLevelDestination.FEED) },

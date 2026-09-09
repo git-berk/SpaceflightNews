@@ -1,65 +1,36 @@
 package com.berco.spaceflightnews.ui.feed
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import com.berco.spaceflightnews.R
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
-import androidx.compose.material3.TopAppBarDefaults
 import com.berco.spaceflightnews.core.model.Article
-import com.berco.spaceflightnews.core.ui.DateFormatter
 import com.berco.spaceflightnews.core.ui.readableWidth
-import com.berco.spaceflightnews.core.ui.OrganicIcons
-import com.berco.spaceflightnews.core.ui.component.ArticleCard
-import com.berco.spaceflightnews.core.ui.component.EndOfListFooter
-import com.berco.spaceflightnews.core.ui.component.InlineErrorRow
-import com.berco.spaceflightnews.core.ui.component.SkeletonCard
-import com.berco.spaceflightnews.core.ui.component.StatusView
-
-private const val ARTICLE_CONTENT_TYPE = "article"
-private const val SKELETON_COUNT = 4
+import com.berco.spaceflightnews.ui.article.PagedArticles
+import com.berco.spaceflightnews.ui.article.toArticleLoadState
 
 @Composable
 fun FeedScreen(
     onArticleClick: (Long) -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FeedViewModel = hiltViewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val feedItems = viewModel.feed.collectAsLazyPagingItems()
-    val searchItems = viewModel.searchResults.collectAsLazyPagingItems()
-
     FeedContent(
-        uiState = uiState,
-        items = if (uiState.isSearchActive) searchItems else feedItems,
+        items = viewModel.feed.collectAsLazyPagingItems(),
         onArticleClick = onArticleClick,
-        onQueryChange = viewModel::onQueryChange,
-        onSearchActiveChange = viewModel::onSearchActiveChange,
+        onSearchClick = onSearchClick,
         onToggleFavorite = viewModel::onToggleFavorite,
         modifier = modifier,
     )
@@ -68,28 +39,15 @@ fun FeedScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FeedContent(
-    uiState: FeedUiState,
     items: LazyPagingItems<Article>,
     onArticleClick: (Long) -> Unit,
-    onQueryChange: (String) -> Unit,
-    onSearchActiveChange: (Boolean) -> Unit,
+    onSearchClick: () -> Unit,
     onToggleFavorite: (Article) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
-    val loadState = items.loadState.toFeedLoadState(items.itemCount)
-    val isSearchIdle = uiState.isSearchActive && uiState.query.trim().length < MIN_QUERY_LENGTH
-
-    val feedListState = rememberLazyListState()
-    val searchListState = rememberLazyListState()
-
-    // Each query produces a different list, so the previous offset is meaningless.
-    // Without this the reader lands mid-way through unrelated results, because a
-    // LazyColumn falls back to the index once the visible item's key disappears.
-    LaunchedEffect(uiState.query) {
-        searchListState.scrollToItem(0)
-    }
+    val listState = rememberLazyListState()
+    val loadState = items.loadState.toArticleLoadState(items.itemCount)
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -98,10 +56,8 @@ private fun FeedContent(
         topBar = {
             FeedTopBar(
                 modifier = Modifier.readableWidth(),
-                uiState = uiState,
                 scrollBehavior = scrollBehavior,
-                onQueryChange = onQueryChange,
-                onSearchActiveChange = onSearchActiveChange,
+                onSearchClick = onSearchClick,
             )
         },
     ) { contentPadding ->
@@ -113,109 +69,13 @@ private fun FeedContent(
                 .readableWidth()
                 .padding(contentPadding),
         ) {
-            when {
-                isSearchIdle -> SearchSuggestions(onSelect = onQueryChange)
-
-                loadState.isRefreshing && loadState.isEmpty -> SkeletonList()
-
-                loadState.hasRefreshError && loadState.isEmpty -> StatusView(
-                    icon = OrganicIcons.Alert,
-                    title = stringResource(R.string.feed_offline_title),
-                    message = stringResource(R.string.feed_offline_message),
-                    actionLabel = stringResource(R.string.feed_offline_action),
-                    actionIcon = OrganicIcons.Refresh,
-                    onAction = items::retry,
-                )
-
-                loadState.isEmpty && uiState.isSearchActive -> StatusView(
-                    icon = OrganicIcons.Search,
-                    title = stringResource(R.string.feed_search_empty_title, uiState.query),
-                    message = stringResource(R.string.feed_search_empty_message),
-                )
-
-                else -> ArticleList(
-                    items = items,
-                    listState = if (uiState.isSearchActive) searchListState else feedListState,
-                    showOfflineBanner = loadState.hasRefreshError,
-                    appendState = loadState.append,
-                    onArticleClick = onArticleClick,
-                    onToggleFavorite = onToggleFavorite,
-                )
-            }
+            PagedArticles(
+                items = items,
+                loadState = loadState,
+                listState = listState,
+                onArticleClick = onArticleClick,
+                onToggleFavorite = onToggleFavorite,
+            )
         }
-    }
-}
-
-@Composable
-private fun ArticleList(
-    items: LazyPagingItems<Article>,
-    listState: LazyListState,
-    showOfflineBanner: Boolean,
-    appendState: FeedLoadState.AppendState,
-    onArticleClick: (Long) -> Unit,
-    onToggleFavorite: (Article) -> Unit,
-) {
-    val dateFormatter = remember { DateFormatter() }
-
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        if (showOfflineBanner) {
-            item(key = "offline-banner", contentType = "banner") {
-                InlineErrorRow(
-                    message = stringResource(R.string.feed_offline_banner),
-                    onRetry = items::retry,
-                )
-            }
-        }
-
-        items(
-            count = items.itemCount,
-            key = items.itemKey { it.id },
-            contentType = items.itemContentType { ARTICLE_CONTENT_TYPE },
-        ) { index ->
-            when (val article = items[index]) {
-                // A placeholder position: the row exists in the database but is
-                // not in the currently loaded window yet.
-                null -> SkeletonCard()
-
-                else -> ArticleCard(
-                    article = article,
-                    dateLabel = dateFormatter.format(article.publishedAt),
-                    onClick = { onArticleClick(article.id) },
-                    onToggleFavorite = { onToggleFavorite(article) },
-                )
-            }
-        }
-
-        when (appendState) {
-            FeedLoadState.AppendState.Loading ->
-                item(key = "append-loading", contentType = "skeleton") { SkeletonCard() }
-
-            FeedLoadState.AppendState.Error ->
-                item(key = "append-error", contentType = "banner") {
-                    InlineErrorRow(stringResource(R.string.feed_append_error), onRetry = items::retry)
-                }
-
-            FeedLoadState.AppendState.EndReached ->
-                item(key = "end-of-list", contentType = "footer") { EndOfListFooter() }
-
-            FeedLoadState.AppendState.Idle -> Unit
-        }
-    }
-}
-
-@Composable
-private fun SkeletonList() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        repeat(SKELETON_COUNT) { SkeletonCard(Modifier.fillMaxWidth()) }
     }
 }

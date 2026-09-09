@@ -50,130 +50,29 @@ private val FIELD_HEIGHT = 48.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedTopBar(
-    uiState: FeedUiState,
     scrollBehavior: TopAppBarScrollBehavior,
-    onQueryChange: (String) -> Unit,
-    onSearchActiveChange: (Boolean) -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (uiState.isSearchActive) {
-        SearchTopBar(
-            query = uiState.query,
-            onQueryChange = onQueryChange,
-            onDismiss = { onSearchActiveChange(false) },
-            modifier = modifier,
-        )
-    } else {
-        LargeTopAppBar(
-            expandedHeight = FEED_HEADER_HEIGHT,
-            title = { Text(stringResource(R.string.feed_title), style = MaterialTheme.typography.displaySmall) },
-            actions = {
-                IconButton(onClick = { onSearchActiveChange(true) }) {
-                    Icon(
-                        OrganicIcons.Search,
-                        contentDescription = stringResource(R.string.feed_search_open),
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            },
-            scrollBehavior = scrollBehavior,
-            colors = TopAppBarDefaults.largeTopAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                scrolledContainerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                actionIconContentColor = MaterialTheme.colorScheme.onSurface,
-            ),
-            modifier = modifier,
-        )
-    }
-}
-
-@Composable
-private fun SearchTopBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val focusRequester = remember { FocusRequester() }
-    val keyboard = LocalSoftwareKeyboardController.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
-
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(onClick = onDismiss, modifier = Modifier.size(44.dp)) {
-            Icon(OrganicIcons.ArrowLeft, contentDescription = stringResource(R.string.feed_search_close))
-        }
-
-        BasicTextField(
-            value = query,
-            onValueChange = onQueryChange,
-            singleLine = true,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-            ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
-            interactionSource = interactionSource,
-            modifier = Modifier
-                .weight(1f)
-                .height(FIELD_HEIGHT)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-                // The design rings the field with a 2px accent border once it is
-                // active, and leaves it unringed at rest.
-                .then(
-                    if (focused) {
-                        Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                    } else {
-                        Modifier
-                    },
+    LargeTopAppBar(
+        expandedHeight = FEED_HEADER_HEIGHT,
+        title = { Text(stringResource(R.string.feed_title), style = MaterialTheme.typography.displaySmall) },
+        actions = {
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    OrganicIcons.Search,
+                    contentDescription = stringResource(R.string.feed_search_open),
+                    modifier = Modifier.size(24.dp),
                 )
-                .focusRequester(focusRequester),
-            decorationBox = { innerTextField ->
-                Row(
-                    Modifier.padding(start = 16.dp, end = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                        if (query.isEmpty()) {
-                            Text(
-                                text = stringResource(R.string.feed_search_placeholder),
-                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        innerTextField()
-                    }
-                    if (query.isNotEmpty()) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.outlineVariant)
-                                .clickable(onClick = { onQueryChange("") }),
-                        ) {
-                            Icon(
-                                OrganicIcons.Close,
-                                contentDescription = stringResource(R.string.feed_search_clear),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        }
-                    }
-                }
-            },
-        )
-    }
+            }
+        },
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.largeTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            scrolledContainerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        modifier = modifier,
+    )
 }

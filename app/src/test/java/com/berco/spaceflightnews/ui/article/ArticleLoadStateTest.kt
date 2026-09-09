@@ -1,10 +1,14 @@
-package com.berco.spaceflightnews.ui.feed
+package com.berco.spaceflightnews.ui.article
 
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
+import com.berco.spaceflightnews.core.model.AppError
+import com.berco.spaceflightnews.core.model.AppException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -12,6 +16,7 @@ private val IDLE = LoadState.NotLoading(endOfPaginationReached = false)
 private val END = LoadState.NotLoading(endOfPaginationReached = true)
 private val LOADING = LoadState.Loading
 private val ERROR = LoadState.Error(RuntimeException("boom"))
+private val RATE_LIMITED = LoadState.Error(AppException(AppError.RateLimited))
 
 private fun states(
     refresh: LoadState = IDLE,
@@ -35,11 +40,11 @@ private fun combined(
     )
 }
 
-class FeedLoadStateTest {
+class ArticleLoadStateTest {
 
     @Test
     fun `mediator loading marks a refresh`() {
-        assertTrue(combined(mediatorRefresh = LOADING).toFeedLoadState(0).isRefreshing)
+        assertTrue(combined(mediatorRefresh = LOADING).toArticleLoadState(0).isRefreshing)
     }
 
     @Test
@@ -47,17 +52,17 @@ class FeedLoadStateTest {
         // Inside the cache TTL the mediator skips its refresh, so only Room reports work.
         val state = combined(sourceRefresh = LOADING, mediatorRefresh = IDLE)
 
-        assertTrue(state.toFeedLoadState(0).isRefreshing)
+        assertTrue(state.toArticleLoadState(0).isRefreshing)
     }
 
     @Test
     fun `an idle feed is not refreshing`() {
-        assertFalse(combined(mediatorRefresh = IDLE).toFeedLoadState(20).isRefreshing)
+        assertFalse(combined(mediatorRefresh = IDLE).toArticleLoadState(20).isRefreshing)
     }
 
     @Test
     fun `a mediator error surfaces as a refresh error`() {
-        assertTrue(combined(mediatorRefresh = ERROR).toFeedLoadState(0).hasRefreshError)
+        assertNotNull(combined(mediatorRefresh = ERROR).toArticleLoadState(0).refreshError)
     }
 
     @Test
@@ -65,39 +70,53 @@ class FeedLoadStateTest {
         // Search has no mediator at all, so the fallback is what surfaces the failure.
         val state = combined(sourceRefresh = ERROR, mediatorRefresh = null)
 
-        assertTrue(state.toFeedLoadState(0).hasRefreshError)
+        assertNotNull(state.toArticleLoadState(0).refreshError)
     }
 
     @Test
     fun `a source error is ignored while the mediator reports success`() {
         val state = combined(sourceRefresh = ERROR, mediatorRefresh = IDLE)
 
-        assertFalse(state.toFeedLoadState(20).hasRefreshError)
+        assertNull(state.toArticleLoadState(20).refreshError)
+    }
+
+    @Test
+    fun `a rate limited refresh keeps its type instead of reading as offline`() {
+        val state = combined(sourceRefresh = RATE_LIMITED, mediatorRefresh = null)
+
+        assertEquals(AppError.RateLimited, state.toArticleLoadState(0).refreshError)
+    }
+
+    @Test
+    fun `an unwrapped failure is reported as unknown rather than guessed at`() {
+        val error = combined(mediatorRefresh = ERROR).toArticleLoadState(0).refreshError
+
+        assertTrue(error is AppError.Unknown)
     }
 
     @Test
     fun `emptiness follows the item count`() {
-        assertTrue(combined().toFeedLoadState(0).isEmpty)
-        assertFalse(combined().toFeedLoadState(1).isEmpty)
+        assertTrue(combined().toArticleLoadState(0).isEmpty)
+        assertFalse(combined().toArticleLoadState(1).isEmpty)
     }
 
     @Test
     fun `append loading and error map across`() {
         assertEquals(
-            FeedLoadState.AppendState.Loading,
-            combined(sourceAppend = LOADING).toFeedLoadState(20).append,
+            ArticleLoadState.AppendState.Loading,
+            combined(sourceAppend = LOADING).toArticleLoadState(20).append,
         )
         assertEquals(
-            FeedLoadState.AppendState.Error,
-            combined(sourceAppend = ERROR).toFeedLoadState(20).append,
+            ArticleLoadState.AppendState.Error,
+            combined(sourceAppend = ERROR).toArticleLoadState(20).append,
         )
     }
 
     @Test
     fun `end of pagination on a populated list reports the end`() {
         assertEquals(
-            FeedLoadState.AppendState.EndReached,
-            combined(sourceAppend = END).toFeedLoadState(20).append,
+            ArticleLoadState.AppendState.EndReached,
+            combined(sourceAppend = END).toArticleLoadState(20).append,
         )
     }
 
@@ -105,16 +124,16 @@ class FeedLoadStateTest {
     fun `end of pagination on an empty list stays idle`() {
         // Guards the footer from rendering as the only row on an empty feed.
         assertEquals(
-            FeedLoadState.AppendState.Idle,
-            combined(sourceAppend = END).toFeedLoadState(0).append,
+            ArticleLoadState.AppendState.Idle,
+            combined(sourceAppend = END).toArticleLoadState(0).append,
         )
     }
 
     @Test
     fun `an append that is merely idle reports idle`() {
         assertEquals(
-            FeedLoadState.AppendState.Idle,
-            combined(sourceAppend = IDLE).toFeedLoadState(20).append,
+            ArticleLoadState.AppendState.Idle,
+            combined(sourceAppend = IDLE).toArticleLoadState(20).append,
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.berco.spaceflightnews.ui.feed
+package com.berco.spaceflightnews.ui.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
