@@ -64,8 +64,7 @@ tops it up.
 API ──► ArticleRemoteMediator ──► Room ──► PagingSource ──► UI
 ```
 
-- **Page size** 20, with the first load covering 3 pages so the opening screen
-  fills in one request.
+- **Page size** 20, with the first load covering 3 pages.
 - **Cache TTL is 10 minutes.** On launch the mediator compares the stored
   timestamp against the clock: inside the window it skips the network and serves
   Room; outside it refreshes. Pull-to-refresh always refreshes.
