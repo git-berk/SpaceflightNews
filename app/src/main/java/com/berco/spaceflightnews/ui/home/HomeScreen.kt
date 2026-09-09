@@ -108,8 +108,6 @@ fun HomeScreen(
                     onArticleClick = onArticleClick,
                     onSearchClick = tabController::navigateToSearch,
                 )
-                // Inside the tab graph, so the bottom bar stays put and back
-                // returns to the feed without a BackHandler.
                 searchScreen(
                     onArticleClick = onArticleClick,
                     onBack = tabController::popBackStack,
