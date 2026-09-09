@@ -66,6 +66,20 @@ class ArticleDetailViewModelTest {
         }
 
     @Test
+    fun `it stays on loading while the read is still in flight`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            articles.getArticleDelayMillis = 100
+
+            val vm = viewModel()
+            observe(vm)
+            advanceTimeBy(50)
+
+            // A nullable article field makes "not loaded yet" and "nothing found"
+            // the same value; only one of them may reach the screen.
+            assertEquals(ArticleDetailUiState.Loading, vm.uiState.value)
+        }
+
+    @Test
     fun `the article is read once even after the screen resubscribes`() =
         runTest(mainDispatcherRule.testDispatcher) {
             val vm = viewModel()

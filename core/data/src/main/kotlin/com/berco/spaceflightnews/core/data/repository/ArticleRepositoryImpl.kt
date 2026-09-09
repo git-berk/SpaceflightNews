@@ -54,16 +54,21 @@ class ArticleRepositoryImpl @Inject constructor(
         enablePlaceholders = true,
     )
 
-    override suspend fun getArticle(id: Long): Article? =
+    /**
+     * Null for every failure, not just an unreachable network: a disk error from
+     * either read would otherwise escape into the caller's scope, where nothing
+     * is waiting for it.
+     */
+    override suspend fun getArticle(id: Long): Article? = try {
         favoriteDao.getById(id)?.toDomain()
             ?: articleDao.getById(id)?.toDomain()
             ?: fetchRemote(id)
-
-    private suspend fun fetchRemote(id: Long): Article? = try {
-        api.getArticle(id).toDomain(favoriteDao.isFavorite(id))
     } catch (e: CancellationException) {
         throw e
     } catch (_: Exception) {
         null
     }
+
+    private suspend fun fetchRemote(id: Long): Article? =
+        api.getArticle(id).toDomain(favoriteDao.isFavorite(id))
 }
