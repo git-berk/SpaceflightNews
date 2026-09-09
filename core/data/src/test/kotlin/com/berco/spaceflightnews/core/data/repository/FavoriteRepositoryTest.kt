@@ -54,10 +54,16 @@ class FavoriteRepositoryTest {
     @Test
     fun `toggle saves then removes`() = runTest {
         repository.toggle(article)
-        assertTrue(repository.isFavorite(42))
+        repository.observeFavoriteIds().test {
+            assertEquals(setOf(42L), awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
 
         repository.toggle(article)
-        assertFalse(repository.isFavorite(42))
+        repository.observeFavoriteIds().test {
+            assertTrue(awaitItem().isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
@@ -77,7 +83,6 @@ class FavoriteRepositoryTest {
 
         db.articleDao().clearAll()
 
-        assertTrue(repository.isFavorite(42))
         assertEquals(0, db.articleDao().count())
         repository.observeFavorites().test {
             assertEquals(1, awaitItem().size)

@@ -11,5 +11,4 @@ interface FavoriteRepository {
 
     suspend fun toggle(article: Article)
 
-    suspend fun isFavorite(id: Long): Boolean
 }

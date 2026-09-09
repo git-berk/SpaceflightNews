@@ -23,5 +23,4 @@ class FakeFavoriteRepository : FavoriteRepository {
         }
     }
 
-    override suspend fun isFavorite(id: Long): Boolean = id in favorites.value
 }

@@ -31,5 +31,4 @@ class FavoriteRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun isFavorite(id: Long): Boolean = favoriteDao.isFavorite(id)
 }
