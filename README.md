@@ -51,9 +51,13 @@ The graph is two levels:
 SpaceflightNavHost
 ├── HomeRoute            bottom bar / navigation rail + tab graph
 │   ├── FeedRoute
+│   ├── SearchRoute      keeps the bottom bar; back returns to the feed
 │   └── FavoritesRoute
 └── ArticleDetailRoute   sibling of Home
 ```
+
+Search is a destination rather than a flag on the feed, so back, its own scroll
+position and its own saved state all come from the back stack.
 
 ## Paging and caching
 
