@@ -20,7 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.res.stringResource
 import com.berco.spaceflightnews.core.ui.component.BottomNavItem
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import com.berco.spaceflightnews.core.ui.component.OrganicBottomNav
 import com.berco.spaceflightnews.core.ui.component.OrganicNavigationRail
 import com.berco.spaceflightnews.ui.favorites.navigation.favoritesScreen
@@ -60,8 +60,8 @@ fun HomeScreen(
 
     // A landscape phone is ~830dp wide, so this is a rotation away, not just a
     // tablet case. Vertical space is the scarce axis there; the rail gives it back.
-    val compactWidth = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass ==
-        WindowWidthSizeClass.COMPACT
+    val compactWidth = !currentWindowAdaptiveInfo().windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
     val onSelectTab: (String) -> Unit = { key ->
         tabController.navigateToTopLevel(TopLevelDestination.valueOf(key))
