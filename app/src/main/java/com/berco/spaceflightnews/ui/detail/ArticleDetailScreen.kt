@@ -36,11 +36,11 @@ fun ArticleDetailScreen(
     val dateFormatter = remember { DateFormatter() }
 
     when (val state = uiState) {
-        ArticleDetailUiState.Loading -> Surface(modifier) {
+        ArticleDetailUiState.Loading -> FullScreenBackdrop(modifier) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
 
-        ArticleDetailUiState.NotFound -> Surface(modifier) {
+        ArticleDetailUiState.NotFound -> FullScreenBackdrop(modifier) {
             StatusView(
                 icon = OrganicIcons.Alert,
                 title = stringResource(R.string.detail_not_found_title),
@@ -66,7 +66,7 @@ fun ArticleDetailScreen(
 
 /** Both non-content states fill the window on the article's own background. */
 @Composable
-private fun Surface(modifier: Modifier, content: @Composable () -> Unit) {
+private fun FullScreenBackdrop(modifier: Modifier, content: @Composable () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
