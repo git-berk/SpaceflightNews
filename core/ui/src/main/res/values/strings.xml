@@ -12,5 +12,5 @@
     <string name="end_of_list_message">That\'s every story we could reach. Pull down to refresh.</string>
 
     <string name="detail_read_full_article">Read full article</string>
-    <string name="detail_attribution">Summary and image courtesy of %1$s. Opens in your browser.</string>
+    <string name="detail_attribution">Summary and image courtesy of %1$s, via the Spaceflight News API. Opens in your browser.</string>
 </resources>
